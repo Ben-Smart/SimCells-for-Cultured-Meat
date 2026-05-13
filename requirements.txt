@@ -1,0 +1,5 @@
+cobra
+matplotlib
+numpy
+pandas
+scipy

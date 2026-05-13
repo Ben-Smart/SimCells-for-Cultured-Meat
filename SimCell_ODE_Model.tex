@@ -1,0 +1,272 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{geometry}
+\geometry{margin=1in}
+
+\title{SimCell ODE Model Documentation}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{Metabolic Map}
+
+The model simulates the following metabolic pathways:
+
+\begin{itemize}
+\item Lactate transport: $lac_e \xrightarrow[lldP/\text{glycolate permease}]{v_{lacT}} lac_c$
+\item Lactate metabolism: $lac_c \xrightarrow[lldD + PDH]{v_1} AcCoA$
+\item TCA + ETC: $AcCoA \xrightarrow[v_{tca}]{TCA + ETC} ATP$
+\item Arginine biosynthesis: $AcCoA \xrightarrow[ArgD-H]{v_2} arg_c$
+\item Arginine export: $arg_c \xrightarrow[ArgO]{v_{argT}} arg_e$
+\item ATP maintenance and synthesis via PPK
+\end{itemize}
+
+\section{State Vector}
+
+The state vector $\mathbf{y}_1$ has 17 elements:
+
+\begin{tabular}{@{}llll@{}}
+\toprule
+Index & Variable & Description & Units \\
+\midrule
+0 & $lac_c$ & Intracellular L-lactate & mM \\
+1 & $nh4_c$ & Intracellular ammonium & mM \\
+2 & $accoa$ & Acetyl-CoA & mM \\
+3 & $arg_c$ & Intracellular L-arginine & mM \\
+4 & $atp$ & ATP & mM \\
+5 & $adp$ & ADP & mM \\
+6 & $polyp$ & Polyphosphate & mM \\
+7 & $lac_e$ & Extracellular lactate & mM \\
+8 & $nh4_e$ & Extracellular ammonium & mM \\
+9 & $arg_e$ & Extracellular arginine & mM \\
+10 & $P_{lacT}$ & lldP + glycolate permease & mg/L \\
+11 & $P_{P1}$ & lldD + PDH & mg/L \\
+12 & $P_{tca}$ & TCA enzymes & mg/L \\
+13 & $P_{P2}$ & ArgD-H enzymes & mg/L \\
+14 & $P_{argT}$ & ArgO exporter & mg/L \\
+15 & $P_{ppk}$ & PPK & mg/L \\
+16 & $n_{atp}^{eff}$ & Effective ETC ATP yield & - \\
+\bottomrule
+\end{tabular}
+
+\section{ODE System}
+
+The system of ODEs is:
+
+\[
+\frac{d lac_c}{dt} = v_{lacT} - v_1
+\]
+
+\[
+\frac{d nh4_c}{dt} = v_{nh3} + v_{nh4T} - v_2
+\]
+
+\[
+\frac{d accoa}{dt} = v_1 - v_2 - v_{tca}
+\]
+
+\[
+\frac{d arg_c}{dt} = v_2 - v_{argT}
+\]
+
+\[
+\frac{d polyp}{dt} = -v_{ppk}
+\]
+
+\[
+\frac{d atp}{dt} = n_{atp}^{eff} \cdot v_{tca} + v_{ppk} - 3 \cdot v_2 - \text{atp\_repair} - v_{maint} - 0.1 \cdot v_{argT}
+\]
+
+\[
+\frac{d adp}{dt} = -\frac{d atp}{dt}
+\]
+
+\[
+\frac{d lac_e}{dt} = -\frac{v_{lacT}}{V_{ratio}}
+\]
+
+\[
+\frac{d nh4_e}{dt} = -\frac{v_{nh3} + v_{nh4T}}{V_{ratio}}
+\]
+
+\[
+\frac{d arg_e}{dt} = \frac{v_{argT}}{V_{ratio}}
+\]
+
+Protein dynamics (for each protein class $P_i$):
+
+\[
+\frac{d P_i}{dt} = v_r - D \cdot P_i
+\]
+
+Where $D$ is the decay rate (0.003 hr$^{-1}$ for cytoplasmic/membrane proteins).
+
+ETC capacity decay:
+
+\[
+\frac{d n_{atp}^{eff}}{dt} = -D_{etc} \cdot n_{atp}^{eff}
+\]
+
+\section{Reaction Rates}
+
+\subsection{Lactate transport (lldP + glycolate permease)}
+\[
+v_{lacT} = \frac{1}{2} \left( v_{raw} + \sqrt{v_{raw}^2 + \epsilon} \right)
+\]
+where
+\[
+v_{raw} = k_{lacT} \cdot P_{lacT} \cdot \left( \frac{lac_e}{K_{m,lacT,E} + lac_e} - \frac{lac_c}{K_{m,lacT,C} + lac_c} \cdot \frac{1}{K_{eq,lacT}} \right)
+\]
+
+\subsection{NH4+/NH3 transport}
+\[
+v_{nh4T} = k_{nh4T} \cdot (nh4_e - nh4_c)
+\]
+\[
+v_{nh3} = P_{nh3} \cdot (nh3_e \cdot nh4_e - nh3_c \cdot nh4_c)
+\]
+where $nh3 = \frac{total_{nh4}}{1 + 10^{pKa - pH}}$
+
+\subsection{lldD + PDH}
+\[
+v_1 = k_1 \cdot P_{P1} \cdot \frac{lac_c}{lac_c + K_{m1}}
+\]
+
+\subsection{ArgD (rate-limiting arginine biosynthesis)}
+\[
+v_2 = k_{argD} \cdot P_{P2} \cdot \frac{accoa}{accoa + K_{m,argD}} \cdot \frac{nh4_c}{nh4_c + K_{m2,nh4}} \cdot \frac{atp}{atp + K_{m2,atp}}
+\]
+
+\subsection{TCA + ETC}
+\[
+v_{tca} = k_{tca} \cdot P_{tca} \cdot \frac{accoa}{accoa + K_{m,tca}} \cdot \frac{adp}{adp + K_{m,adp,tca}}
+\]
+
+\subsection{PPK}
+\[
+v_{ppk} = a_{ppk} \cdot P_{ppk} \cdot \frac{adp}{K_{m,adp} + adp} \cdot \frac{polyp}{K_{m,polyp} + polyp}
+\]
+
+\subsection{Protein synthesis}
+\[
+v_r = r \cdot \frac{atp}{K_e + atp}
+\]
+\[
+v_{r,total} = v_r \cdot N_{protein\_classes}
+\]
+\[
+\text{atp\_repair} = \text{atp\_repair\_const} \cdot v_{r,total}
+\]
+\[
+v_{maint} = m_{ATP} \cdot \phi
+\]
+
+\subsection{ArgO export}
+\[
+v_{argT} = k_{argO} \cdot P_{argT} \cdot \frac{arg_c}{arg_c + K_{m,argO}}
+\]
+
+\section{Parameters}
+
+All rates in mmol hr$^{-1}$ mg$^{-1}$ unless noted.
+
+\subsection{Kinetic Parameters (K\_PARAMS)}
+
+\begin{tabular}{@{}llll@{}}
+\toprule
+Parameter & Value & Units & Description \\
+\midrule
+$k_{lacT}$ & 0.00024 & mmol hr$^{-1}$ mg$^{-1}$ & Lactate transport rate \\
+$K_{m,lacT,E}$ & 0.01 & mM & Km extracellular lactate \\
+$K_{m,lacT,C}$ & 0.01 & mM & Km intracellular lactate \\
+$K_{eq,lacT}$ & 189.0 & - & Equilibrium constant \\
+$k_{nh4T}$ & 0.0001 & hr$^{-1}$ & NH4 ionic leak \\
+$P_{nh3}$ & 3780000.0 & hr$^{-1}$ & NH3 diffusion permeability \\
+$pKa$ & 9.25 & - & NH4+/NH3 equilibrium \\
+$pH_{ext}$ & 7 & - & External pH \\
+$pH_{int}$ & 7.5 & - & Internal pH \\
+$k_1$ & 0.012 & mmol hr$^{-1}$ mg$^{-1}$ & lldD + PDH rate \\
+$K_{m1}$ & 0.26 & mM & Km lactate \\
+$k_{tca}$ & 0.0465 & mmol hr$^{-1}$ mg$^{-1}$ & TCA + ETC rate \\
+$K_{m,tca}$ & 0.12 & mM & Km AcCoA \\
+$K_{m,adp,tca}$ & 0.10 & mM & Km ADP \\
+$k_{argD}$ & 3.84e-4 & mmol hr$^{-1}$ mg$^{-1}$ & ArgD rate \\
+$K_{m,argD}$ & 0.48 & mM & Km AcCoA \\
+$K_{m2,nh4}$ & 1.5 & mM & Km NH4 for ArgD \\
+$K_{m2,atp}$ & 1.1 & mM & Km ATP for ArgD \\
+$k_{argO}$ & 1.38e-4 & mmol hr$^{-1}$ mg$^{-1}$ & ArgO rate \\
+$K_{m,argO}$ & 10.0 & mM & Km arginine \\
+$a_{ppk}$ & 0.0642 & mmol hr$^{-1}$ mg$^{-1}$ & PPK rate \\
+$K_{m,adp}$ & 0.25 & mM & Km ADP for PPK \\
+$K_{m,polyp}$ & 0.15 & mM & Km polyP for PPK \\
+$atp_{repair\_const}$ & 0.037 & mM ATP per mM protein & Repair cost \\
+\bottomrule
+\end{tabular}
+
+\subsection{Decay Rates}
+
+\begin{tabular}{@{}llll@{}}
+\toprule
+Parameter & Value & Units & Description \\
+\midrule
+$D_{cyto}$ & 0.003 & hr$^{-1}$ & Cytoplasmic protein decay \\
+$D_{mem}$ & 0.003 & hr$^{-1}$ & Membrane protein decay \\
+$D_{etc}$ & 0.003 & hr$^{-1}$ & ETC complex decay \\
+\bottomrule
+\end{tabular}
+
+\subsection{Protein Decay Map}
+
+\begin{tabular}{@{}ll@{}}
+\toprule
+Protein & Decay Class \\
+\midrule
+$P_{lacT}$ & $D_{mem}$ \\
+$P_{P1}$ & $D_{cyto}$ \\
+$P_{tca}$ & $D_{cyto}$ \\
+$P_{P2}$ & $D_{cyto}$ \\
+$P_{argT}$ & $D_{mem}$ \\
+$P_{ppk}$ & $D_{cyto}$ \\
+\bottomrule
+\end{tabular}
+
+\subsection{Scaling and Initial Conditions}
+
+\begin{tabular}{@{}llll@{}}
+\toprule
+Parameter & Value & Units & Description \\
+\midrule
+$Cell\_density\_dcw$ & 45 & gDCW/L & Cell density \\
+$V_{per\_dcw}$ & 2.0e-3 & L\_cytoplasm/gDCW & Cytoplasm volume per DCW \\
+$\phi_{cell}$ & 0.09 & - & Cell volume fraction \\
+$V_{ratio}$ & 11.111 & L\_bio/L\_cell & Bioreactor to cell volume ratio \\
+$PTOT\_to\_GDW$ & 550.0 & mg protein/g DW & Protein to dry weight \\
+$P_{fracs}$ & Various & - & Initial protein fractions \\
+\bottomrule
+\end{tabular}
+
+\subsection{Simulation Parameters}
+
+\begin{tabular}{@{}llll@{}}
+\toprule
+Parameter & Value & Units & Description \\
+\midrule
+$r$ & 10 & mg/L/hr & Protein synthesis rate \\
+$K_e$ & 0.5 & mM & ATP half-sat for ribosomes \\
+$m_{ATP}$ & 0.01 & mM/hr & Maintenance ATP \\
+$Ptot0$ & 200000.0 & mg/L & Initial total protein \\
+$atp0$ & 1.8 & mM & Initial ATP \\
+$A_{tot}$ & 2.36 & mM & Total adenylate pool \\
+$polyp0$ & 2.0 & mM & Initial polyphosphate \\
+$nh4_{c0}$ & 0.1 & mM & Initial intracellular NH4 \\
+$arg_{c0}$ & 0.01 & mM & Initial intracellular arginine \\
+$n_{atp\_eff0}$ & 10.0 & - & Initial ETC yield \\
+\bottomrule
+\end{tabular}
+
+\end{document}
