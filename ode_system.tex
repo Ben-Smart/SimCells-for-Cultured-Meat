@@ -1,0 +1,55 @@
+% ODE system derived from Xol.m
+% Method-of-lines discretisation for two species (lactic acid and ammonia)
+% across: inlet liquid (j=1), nB hydrogel nodes (j=2,...,nB+1),
+%         outlet liquid (j=nB+2).
+%
+% Notation:
+%   C_j  -- concentration at node j (superscript lac or NH omitted for brevity)
+%   delta -- BLT, hydrogel (boundary layer) thickness
+%   h_b   -- delta / nB, hydrogel grid spacing
+%   Q     -- volumetric flow rate
+%   V_L   -- liquid compartment volume
+%   A_I   -- interfacial area
+%   D_L   -- liquid-phase diffusivity
+%   D_B   -- hydrogel-phase diffusivity
+%   R     -- reaction rate (currently zero; placeholder for SimCell consumption)
+%
+% Identical equations hold for both species; substitute (lac <-> NH) throughout.
+
+\begin{equation}
+\dot{C}_{1} =
+  \underbrace{\frac{Q}{V_L}\!\left(C_{L,\mathrm{in}} - C_{1}\right)}_{\text{advection in}}
+  -\underbrace{\frac{D_L\, A_I}{\delta\, V_L}\!\left(C_{1} - C_{2}\right)}_{\text{transfer to hydrogel}}
+\label{eq:liquid_in}
+\end{equation}
+
+\begin{equation}
+\dot{C}_{2} =
+  \underbrace{\frac{D_L}{\delta}\!\left(C_{1} - C_{2}\right)}_{\text{transfer from liquid}}
+  +\underbrace{\frac{D_B}{h_b^{2}}\!\left(C_{3} - C_{2}\right)}_{\substack{\text{diffusion into} \\ \text{hydrogel (nB>1)}}}
+  - R
+\label{eq:hydrogel_first}
+\end{equation}
+
+\begin{equation}
+\dot{C}_{j} =
+  \underbrace{\frac{D_B}{h_b^{2}}\!\left(C_{j-1} - 2C_{j} + C_{j+1}\right)}_{\text{interior diffusion}}
+  - R,
+  \qquad j = 3,\ldots,n_B
+\label{eq:hydrogel_interior}
+\end{equation}
+
+\begin{equation}
+\dot{C}_{n_B+1} =
+  \underbrace{\frac{D_B}{h_b^{2}}\!\left(C_{n_B} - C_{n_B+1}\right)}_{\substack{\text{diffusion from} \\ \text{hydrogel (nB>1)}}}
+  +\underbrace{\frac{D_L}{\delta}\!\left(C_{n_B+1} - C_{n_B+2}\right)}_{\text{transfer to liquid}}
+  - R
+\label{eq:hydrogel_last}
+\end{equation}
+
+\begin{equation}
+\dot{C}_{n_B+2} =
+  \underbrace{\frac{D_L\, A_I}{\delta\, V_L}\!\left(C_{n_B+1} - C_{n_B+2}\right)}_{\text{transfer from hydrogel}}
+  -\underbrace{\frac{Q}{V_L}\!\left(C_{n_B+2} - C_{L,\mathrm{out}}\right)}_{\text{advection out}}
+\label{eq:liquid_out}
+\end{equation}

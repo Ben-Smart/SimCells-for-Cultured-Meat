@@ -1,0 +1,38 @@
+\begin{table}[htb!]
+\centering
+\begin{tabular}{|l|p{6cm}|p{7cm}|}
+\hline
+\textbf{Parameter} & \textbf{Definition} & \textbf{Literature or Experimental?} \\
+\hline
+$Q_\text{in}$ & Volumetric flow rate at the inlet & \textbf{Experimental} --- set by the pump/flow controller; a design/operational variable \\
+\hline
+$Q_\text{out}$ & Volumetric flow rate at the outlet & \textbf{Experimental} --- measured directly; should match $Q_\text{in}$ at steady state \\
+\hline
+BLT & Boundary layer thickness (wall thickness of the hydrogel ``teabag'') & \textbf{Experimental} --- measured physically (e.g.\ cryosectioning, microscopy, or calipers) \\
+\hline
+$D_{L,\text{lac}}$ & Liquid phase diffusivity of lactic acid & \textbf{Literature} --- well characterised in aqueous media; values available at physiological conditions \\
+\hline
+$D_{L,\text{NH}}$ & Liquid phase diffusivity of ammonia & \textbf{Literature} --- well characterised in aqueous media; values available at physiological conditions \\
+\hline
+$C_{L,\text{in}}^\text{lac}$ & Influent concentration of lactic acid & \textbf{Experimental} --- set by media formulation or measured at inlet \\
+\hline
+$C_{L,\text{in}}^\text{NH}$ & Influent concentration of ammonia & \textbf{Experimental} --- set by media formulation or measured at inlet \\
+\hline
+$C_{L,\text{out}}^\text{lac}$ & Effluent concentration of lactic acid & \textbf{Experimental} --- measured at outlet (e.g.\ enzymatic assay, HPLC) \\
+\hline
+$C_{L,\text{out}}^\text{NH}$ & Effluent concentration of ammonia & \textbf{Experimental} --- measured at outlet (e.g.\ colorimetric assay) \\
+\hline
+$X$ & Biomass density within the hydrogel & \textbf{Experimental} --- requires destructive assay (DNA quantification, protein content, or cell counting after digestion) \\
+\hline
+$\rho$ & Fluid density & \textbf{Literature} --- well characterised for aqueous culture media at physiological conditions \\
+\hline
+$v$ & Fluid velocity inside the hydrogel & \textbf{Derived} --- calculated from $Q_\text{in}$ and the cross-sectional flow area (geometry measured experimentally) \\
+\hline
+$\mu$ & Dynamic viscosity of the fluid & \textbf{Literature} --- well characterised for aqueous culture media at physiological conditions \\
+\hline
+$Re$ & Reynolds number of fluid inside the hydrogel ($Re = \rho v L / \mu$, where $L$ is a characteristic length) & \textbf{Derived} --- calculated from $\rho$, $v$, $\mu$, and geometry; $\rho$ and $\mu$ from literature, $v$ and geometry from experiment \\
+\hline
+\end{tabular}
+\caption{Model parameters: definitions and sources.}
+\label{tab:parameters}
+\end{table}

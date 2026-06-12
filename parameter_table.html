@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; margin: 40px; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { border: 1px solid #999; padding: 8px 12px; text-align: left; vertical-align: top; }
+  th { background-color: #dce6f1; font-weight: bold; }
+  tr:nth-child(even) { background-color: #f5f5f5; }
+</style>
+</head>
+<body>
+<table>
+  <thead>
+    <tr>
+      <th>Parameter</th>
+      <th>Definition</th>
+      <th>Literature or Experimental?</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Q_in</td>
+      <td>Volumetric flow rate at the inlet</td>
+      <td><strong>Experimental</strong> — set by the pump/flow controller; a design/operational variable</td>
+    </tr>
+    <tr>
+      <td>Q_out</td>
+      <td>Volumetric flow rate at the outlet</td>
+      <td><strong>Experimental</strong> — measured directly; should match Q_in at steady state</td>
+    </tr>
+    <tr>
+      <td>BLT</td>
+      <td>Boundary layer thickness (wall thickness of the hydrogel "teabag")</td>
+      <td><strong>Experimental</strong> — measured physically (e.g. cryosectioning, microscopy, or calipers)</td>
+    </tr>
+    <tr>
+      <td>DL_lac</td>
+      <td>Liquid phase diffusivity of lactic acid</td>
+      <td><strong>Literature</strong> — well characterised in aqueous media; values available at physiological conditions</td>
+    </tr>
+    <tr>
+      <td>DL_NH</td>
+      <td>Liquid phase diffusivity of ammonia</td>
+      <td><strong>Literature</strong> — well characterised in aqueous media; values available at physiological conditions</td>
+    </tr>
+    <tr>
+      <td>CL_in_Lac</td>
+      <td>Influent concentration of lactic acid</td>
+      <td><strong>Experimental</strong> — set by media formulation or measured at inlet</td>
+    </tr>
+    <tr>
+      <td>CL_in_NH</td>
+      <td>Influent concentration of ammonia</td>
+      <td><strong>Experimental</strong> — set by media formulation or measured at inlet</td>
+    </tr>
+    <tr>
+      <td>CL_out_Lac</td>
+      <td>Effluent concentration of lactic acid</td>
+      <td><strong>Experimental</strong> — measured at outlet (e.g. enzymatic assay, HPLC)</td>
+    </tr>
+    <tr>
+      <td>CL_out_NH</td>
+      <td>Effluent concentration of ammonia</td>
+      <td><strong>Experimental</strong> — measured at outlet (e.g. colorimetric assay)</td>
+    </tr>
+    <tr>
+      <td>X</td>
+      <td>Biomass density within the hydrogel</td>
+      <td><strong>Experimental</strong> — requires destructive assay (DNA quantification, protein content, or cell counting after digestion)</td>
+    </tr>
+    <tr>
+      <td>&rho;</td>
+      <td>Fluid density</td>
+      <td><strong>Literature</strong> — well characterised for aqueous culture media at physiological conditions</td>
+    </tr>
+    <tr>
+      <td>v</td>
+      <td>Fluid velocity inside the hydrogel</td>
+      <td><strong>Derived</strong> — calculated from Q_in and the cross-sectional flow area (geometry measured experimentally)</td>
+    </tr>
+    <tr>
+      <td>&mu;</td>
+      <td>Dynamic viscosity of the fluid</td>
+      <td><strong>Literature</strong> — well characterised for aqueous culture media at physiological conditions</td>
+    </tr>
+    <tr>
+      <td>RE</td>
+      <td>Reynolds number of fluid inside the hydrogel (RE = &rho;vL/&mu;, where L is a characteristic length)</td>
+      <td><strong>Derived</strong> — calculated from &rho;, v, &mu;, and geometry; &rho; and &mu; from literature, v and geometry from experiment</td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>

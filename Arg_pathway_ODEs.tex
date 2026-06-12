@@ -1,0 +1,237 @@
+% Arg_pathway_ODEs.tex
+% Full ODE system for the arginine biosynthesis pathway with ArgO export.
+% Derived from Arg_pathway_sim.ipynb.
+%
+% Scaling:  xi     = X_0 * f_p   (intracellular reactions, X_0=0.1 g/L, f_p=0.55)
+%           xi_exp = X_0          (export reaction)
+% All concentrations in mM, rates in umol/min/mg protein.
+% =========================================================================
+
+% --- pathway intermediates -----------------------------------------------
+
+\begin{align}
+\frac{d[\mathrm{Glu}]}{dt}
+  &= \xi \Biggl[
+      \underbrace{
+        V_{\max}^{ghdA}
+        \cdot\frac{[\alpha\mathrm{KG}]}{K_m^{ghdA,\,\alpha\mathrm{KG}}+[\alpha\mathrm{KG}]}
+        \cdot\frac{[\mathrm{NH}_4^+]}{K_m^{ghdA,\,\mathrm{NH}_4}+[\mathrm{NH}_4^+]}
+        \cdot\frac{[\mathrm{NADPH}]}{K_m^{ghdA,\,\mathrm{NADPH}}+[\mathrm{NADPH}]}
+      }_{v_{ghdA}}
+  \notag\\
+  &\qquad\qquad -
+      \underbrace{
+        \frac{V_{\max}^{argJ}\,[\mathrm{AcOrn}][\mathrm{Glu}]}
+             {[\mathrm{AcOrn}][\mathrm{Glu}]
+              +K_m^{argJ,\,\mathrm{Glu}}[\mathrm{AcOrn}]
+               \!\left(1+\dfrac{[\mathrm{Orn}]}{K_i^{argJ,\,\mathrm{Orn}}}\right)
+              +K_m^{argJ,\,\mathrm{AcOrn}}[\mathrm{Glu}]}
+      }_{v_{argJ}}
+    \Biggr]
+\label{eq:dGlu}
+\end{align}
+
+\begin{align}
+\frac{d[\mathrm{AcGlu}]}{dt}
+  &= \xi \Biggl[
+      \frac{V_{\max}^{argJ}\,[\mathrm{AcOrn}][\mathrm{Glu}]}
+           {[\mathrm{AcOrn}][\mathrm{Glu}]
+            +K_m^{argJ,\,\mathrm{Glu}}[\mathrm{AcOrn}]
+             \!\left(1+\dfrac{[\mathrm{Orn}]}{K_i^{argJ,\,\mathrm{Orn}}}\right)
+            +K_m^{argJ,\,\mathrm{AcOrn}}[\mathrm{Glu}]}
+  \notag\\
+  &\qquad\qquad -
+      V_{\max}^{argB}
+      \cdot\frac{[\mathrm{AcGlu}]}{K_m^{argB,\,\mathrm{AcGlu}}+[\mathrm{AcGlu}]}
+      \cdot\frac{[\mathrm{ATP}]}{K_m^{argG,\,\mathrm{ATP}}+[\mathrm{ATP}]}
+    \Biggr]
+\label{eq:dAcGlu}
+\end{align}
+
+\begin{align}
+\frac{d[\mathrm{AcG5P}]}{dt}
+  &= \xi \Biggl[
+      V_{\max}^{argB}
+      \cdot\frac{[\mathrm{AcGlu}]}{K_m^{argB,\,\mathrm{AcGlu}}+[\mathrm{AcGlu}]}
+      \cdot\frac{[\mathrm{ATP}]}{K_m^{argG,\,\mathrm{ATP}}+[\mathrm{ATP}]}
+  \notag\\
+  &\qquad\qquad -
+      V_{\max}^{argC}
+      \cdot\frac{[\mathrm{AcG5P}]}{K_m^{argC,\,\mathrm{AcG5P}}+[\mathrm{AcG5P}]}
+      \cdot\frac{[\mathrm{NADPH}]}{K_m^{ghdA,\,\mathrm{NADPH}}+[\mathrm{NADPH}]}
+    \Biggr]
+\label{eq:dAcG5P}
+\end{align}
+
+\begin{align}
+\frac{d[\mathrm{AcG5SA}]}{dt}
+  &= \xi \Biggl[
+      V_{\max}^{argC}
+      \cdot\frac{[\mathrm{AcG5P}]}{K_m^{argC,\,\mathrm{AcG5P}}+[\mathrm{AcG5P}]}
+      \cdot\frac{[\mathrm{NADPH}]}{K_m^{ghdA,\,\mathrm{NADPH}}+[\mathrm{NADPH}]}
+      -
+      \frac{V_{\max}^{argD}\,[\mathrm{AcG5SA}]}{K_m^{argD,\,\mathrm{AcG5SA}}+[\mathrm{AcG5SA}]}
+    \Biggr]
+\label{eq:dAcG5SA}
+\end{align}
+
+\begin{align}
+\frac{d[\mathrm{AcOrn}]}{dt}
+  &= \xi \Biggl[
+      \frac{V_{\max}^{argD}\,[\mathrm{AcG5SA}]}{K_m^{argD,\,\mathrm{AcG5SA}}+[\mathrm{AcG5SA}]}
+  \notag\\
+  &\qquad\qquad -
+      \frac{V_{\max}^{argJ}\,[\mathrm{AcOrn}][\mathrm{Glu}]}
+           {[\mathrm{AcOrn}][\mathrm{Glu}]
+            +K_m^{argJ,\,\mathrm{Glu}}[\mathrm{AcOrn}]
+             \!\left(1+\dfrac{[\mathrm{Orn}]}{K_i^{argJ,\,\mathrm{Orn}}}\right)
+            +K_m^{argJ,\,\mathrm{AcOrn}}[\mathrm{Glu}]}
+    \Biggr]
+\label{eq:dAcOrn}
+\end{align}
+
+\begin{align}
+\frac{d[\mathrm{Orn}]}{dt}
+  &= \xi \Biggl[
+      \frac{V_{\max}^{argJ}\,[\mathrm{AcOrn}][\mathrm{Glu}]}
+           {[\mathrm{AcOrn}][\mathrm{Glu}]
+            +K_m^{argJ,\,\mathrm{Glu}}[\mathrm{AcOrn}]
+             \!\left(1+\dfrac{[\mathrm{Orn}]}{K_i^{argJ,\,\mathrm{Orn}}}\right)
+            +K_m^{argJ,\,\mathrm{AcOrn}}[\mathrm{Glu}]}
+  \notag\\
+  &\qquad\qquad -
+      \frac{V_{\max}^{argF}\,[\mathrm{Orn}][\mathrm{CbmP}]}
+           {[\mathrm{Orn}][\mathrm{CbmP}]
+            +K_m^{argF,\,\mathrm{Orn}}[\mathrm{CbmP}]
+            +K_m^{argF,\,\mathrm{CbmP}}[\mathrm{Orn}]
+            +K_m^{argF,\,\mathrm{Orn}}K_m^{argF,\,\mathrm{CbmP}}}
+    \Biggr]
+\label{eq:dOrn}
+\end{align}
+
+\begin{align}
+\frac{d[\mathrm{Citr}]}{dt}
+  &= \xi \Biggl[
+      \frac{V_{\max}^{argF}\,[\mathrm{Orn}][\mathrm{CbmP}]}
+           {[\mathrm{Orn}][\mathrm{CbmP}]
+            +K_m^{argF,\,\mathrm{Orn}}[\mathrm{CbmP}]
+            +K_m^{argF,\,\mathrm{CbmP}}[\mathrm{Orn}]
+            +K_m^{argF,\,\mathrm{Orn}}K_m^{argF,\,\mathrm{CbmP}}}
+  \notag\\
+  &\qquad\qquad -
+      \frac{V_{\max}^{argG}\,[\mathrm{Citr}][\mathrm{Asp}]}
+           {[\mathrm{Citr}][\mathrm{Asp}]
+            +K_m^{argG,\,\mathrm{Citr}}[\mathrm{Asp}]
+            +K_m^{argG,\,\mathrm{Asp}}[\mathrm{Citr}]
+            +K_m^{argG,\,\mathrm{Citr}}K_m^{argG,\,\mathrm{Asp}}}
+      \cdot\frac{[\mathrm{ATP}]}{K_m^{argG,\,\mathrm{ATP}}+[\mathrm{ATP}]}
+    \Biggr]
+\label{eq:dCitr}
+\end{align}
+
+\begin{align}
+\frac{d[\mathrm{ArgSuc}]}{dt}
+  &= \xi \Biggl[
+      \frac{V_{\max}^{argG}\,[\mathrm{Citr}][\mathrm{Asp}]}
+           {[\mathrm{Citr}][\mathrm{Asp}]
+            +K_m^{argG,\,\mathrm{Citr}}[\mathrm{Asp}]
+            +K_m^{argG,\,\mathrm{Asp}}[\mathrm{Citr}]
+            +K_m^{argG,\,\mathrm{Citr}}K_m^{argG,\,\mathrm{Asp}}}
+      \cdot\frac{[\mathrm{ATP}]}{K_m^{argG,\,\mathrm{ATP}}+[\mathrm{ATP}]}
+      -
+      \frac{V_{\max}^{argH}\,[\mathrm{ArgSuc}]}{K_m^{argH,\,\mathrm{ArgSuc}}+[\mathrm{ArgSuc}]}
+    \Biggr]
+\label{eq:dArgSuc}
+\end{align}
+
+\begin{align}
+\frac{d[\mathrm{Arg}_i]}{dt}
+  &= \xi\,\frac{V_{\max}^{argH}\,[\mathrm{ArgSuc}]}{K_m^{argH,\,\mathrm{ArgSuc}}+[\mathrm{ArgSuc}]}
+    -\xi_{exp}\,\frac{V_{\max}^{argO}\,[\mathrm{Arg}_i]}{K_m^{argO,\,\mathrm{Arg}}+[\mathrm{Arg}_i]}
+\label{eq:dArgi}
+\end{align}
+
+\begin{align}
+\frac{d[\mathrm{Arg}_e]}{dt}
+  &= \xi_{exp}\,\frac{V_{\max}^{argO}\,[\mathrm{Arg}_i]}{K_m^{argO,\,\mathrm{Arg}}+[\mathrm{Arg}_i]}
+\label{eq:dArge}
+\end{align}
+
+% --- cofactor depletion (no regeneration in batch) -----------------------
+
+\begin{align}
+\frac{d[\alpha\mathrm{KG}]}{dt}
+  &= -\xi\,
+      V_{\max}^{ghdA}
+      \cdot\frac{[\alpha\mathrm{KG}]}{K_m^{ghdA,\,\alpha\mathrm{KG}}+[\alpha\mathrm{KG}]}
+      \cdot\frac{[\mathrm{NH}_4^+]}{K_m^{ghdA,\,\mathrm{NH}_4}+[\mathrm{NH}_4^+]}
+      \cdot\frac{[\mathrm{NADPH}]}{K_m^{ghdA,\,\mathrm{NADPH}}+[\mathrm{NADPH}]}
+\label{eq:daKG}
+\end{align}
+
+\begin{align}
+\frac{d[\mathrm{NH}_4^+]}{dt}
+  &= -\xi\,
+      V_{\max}^{ghdA}
+      \cdot\frac{[\alpha\mathrm{KG}]}{K_m^{ghdA,\,\alpha\mathrm{KG}}+[\alpha\mathrm{KG}]}
+      \cdot\frac{[\mathrm{NH}_4^+]}{K_m^{ghdA,\,\mathrm{NH}_4}+[\mathrm{NH}_4^+]}
+      \cdot\frac{[\mathrm{NADPH}]}{K_m^{ghdA,\,\mathrm{NADPH}}+[\mathrm{NADPH}]}
+\label{eq:dNH4}
+\end{align}
+
+\begin{align}
+\frac{d[\mathrm{NADPH}]}{dt}
+  &= -\xi \Biggl[
+      V_{\max}^{ghdA}
+      \cdot\frac{[\alpha\mathrm{KG}]}{K_m^{ghdA,\,\alpha\mathrm{KG}}+[\alpha\mathrm{KG}]}
+      \cdot\frac{[\mathrm{NH}_4^+]}{K_m^{ghdA,\,\mathrm{NH}_4}+[\mathrm{NH}_4^+]}
+      \cdot\frac{[\mathrm{NADPH}]}{K_m^{ghdA,\,\mathrm{NADPH}}+[\mathrm{NADPH}]}
+  \notag\\
+  &\qquad\qquad +
+      V_{\max}^{argC}
+      \cdot\frac{[\mathrm{AcG5P}]}{K_m^{argC,\,\mathrm{AcG5P}}+[\mathrm{AcG5P}]}
+      \cdot\frac{[\mathrm{NADPH}]}{K_m^{ghdA,\,\mathrm{NADPH}}+[\mathrm{NADPH}]}
+    \Biggr]
+\label{eq:dNADPH}
+\end{align}
+
+\begin{align}
+\frac{d[\mathrm{ATP}]}{dt}
+  &= -\xi \Biggl[
+      V_{\max}^{argB}
+      \cdot\frac{[\mathrm{AcGlu}]}{K_m^{argB,\,\mathrm{AcGlu}}+[\mathrm{AcGlu}]}
+      \cdot\frac{[\mathrm{ATP}]}{K_m^{argG,\,\mathrm{ATP}}+[\mathrm{ATP}]}
+  \notag\\
+  &\qquad\qquad +
+      \frac{V_{\max}^{argG}\,[\mathrm{Citr}][\mathrm{Asp}]}
+           {[\mathrm{Citr}][\mathrm{Asp}]
+            +K_m^{argG,\,\mathrm{Citr}}[\mathrm{Asp}]
+            +K_m^{argG,\,\mathrm{Asp}}[\mathrm{Citr}]
+            +K_m^{argG,\,\mathrm{Citr}}K_m^{argG,\,\mathrm{Asp}}}
+      \cdot\frac{[\mathrm{ATP}]}{K_m^{argG,\,\mathrm{ATP}}+[\mathrm{ATP}]}
+    \Biggr]
+\label{eq:dATP}
+\end{align}
+
+\begin{align}
+\frac{d[\mathrm{CbmP}]}{dt}
+  &= -\xi\,
+      \frac{V_{\max}^{argF}\,[\mathrm{Orn}][\mathrm{CbmP}]}
+           {[\mathrm{Orn}][\mathrm{CbmP}]
+            +K_m^{argF,\,\mathrm{Orn}}[\mathrm{CbmP}]
+            +K_m^{argF,\,\mathrm{CbmP}}[\mathrm{Orn}]
+            +K_m^{argF,\,\mathrm{Orn}}K_m^{argF,\,\mathrm{CbmP}}}
+\label{eq:dCbmP}
+\end{align}
+
+\begin{align}
+\frac{d[\mathrm{Asp}]}{dt}
+  &= -\xi\,
+      \frac{V_{\max}^{argG}\,[\mathrm{Citr}][\mathrm{Asp}]}
+           {[\mathrm{Citr}][\mathrm{Asp}]
+            +K_m^{argG,\,\mathrm{Citr}}[\mathrm{Asp}]
+            +K_m^{argG,\,\mathrm{Asp}}[\mathrm{Citr}]
+            +K_m^{argG,\,\mathrm{Citr}}K_m^{argG,\,\mathrm{Asp}}}
+      \cdot\frac{[\mathrm{ATP}]}{K_m^{argG,\,\mathrm{ATP}}+[\mathrm{ATP}]}
+\label{eq:dAsp}
+\end{align}
