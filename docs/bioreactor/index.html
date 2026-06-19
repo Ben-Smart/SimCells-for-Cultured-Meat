@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SimCells Bioreactor — Interactive Model</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background:#060d1f;
+  color:#e0e8ff;
+  font-family:'Segoe UI',system-ui,sans-serif;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* ─── Header ─── */
+header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 32px;
+  background:rgba(255,255,255,0.03);
+  border-bottom:1px solid rgba(255,255,255,0.07);
+}
+.hdr-title { font-size:1.1rem; font-weight:600; color:#7dd3fc; letter-spacing:.3px; }
+.hdr-sub   { font-size:.8rem; color:#64748b; }
+
+/* ─── Main view ─── */
+#main-view {
+  display:flex; flex-direction:column; align-items:center;
+  padding:36px 20px 20px;
+}
+.reactor-wrap { position:relative; display:inline-block; }
+#reactor-svg {
+  width:300px;
+  filter:drop-shadow(0 0 40px rgba(100,180,255,.12));
+}
+
+/* pulse animation for hotspot dots */
+@keyframes pulse {
+  0%   { opacity:.85; r:7;  }
+  100% { opacity:0;   r:20; }
+}
+.pulse-ring { animation:pulse 2.2s ease-out infinite; }
+
+/* hover glow on clickable SVG regions */
+.hot { cursor:pointer; }
+.hot:hover { filter:brightness(1.18); }
+
+.hint {
+  margin-top:14px;
+  font-size:.78rem; color:#475569; letter-spacing:.4px;
+}
+
+/* ─── Slide Panel ─── */
+#panel {
+  position:fixed; top:0; right:0;
+  width:min(58%, 800px); height:100vh;
+  background:#0b1428;
+  border-left:1px solid rgba(100,180,255,.13);
+  transform:translateX(100%);
+  transition:transform .42s cubic-bezier(.4,0,.2,1);
+  display:flex; flex-direction:column;
+  z-index:100;
+  box-shadow:-20px 0 60px rgba(0,0,0,.6);
+}
+#panel.open { transform:translateX(0); }
+
+.ph {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:18px 26px;
+  border-bottom:1px solid rgba(255,255,255,.07);
+  flex-shrink:0;
+}
+.ph-title { font-size:1.05rem; font-weight:600; color:#7dd3fc; }
+.ph-close {
+  background:none; border:1px solid rgba(255,255,255,.14);
+  color:#94a3b8; width:30px; height:30px; border-radius:6px;
+  cursor:pointer; font-size:1rem;
+  display:flex; align-items:center; justify-content:center;
+  transition:all .14s;
+}
+.ph-close:hover { border-color:#7dd3fc; color:#7dd3fc; }
+
+.slide-area { flex:1; overflow-y:auto; padding:28px 26px; }
+
+.slide-tag {
+  display:inline-block;
+  background:rgba(125,211,252,.1); border:1px solid rgba(125,211,252,.22);
+  color:#7dd3fc; font-size:.72rem; padding:2px 10px; border-radius:99px;
+  margin-bottom:12px;
+}
+.slide-area h2 { font-size:1.2rem; color:#e2e8f0; margin-bottom:10px; }
+.slide-area p  { font-size:.9rem; color:#94a3b8; line-height:1.65; }
+
+.slide-media {
+  margin-top:18px;
+  width:100%; min-height:200px;
+  background:#111c36;
+  border:1px dashed rgba(100,180,255,.2);
+  border-radius:10px;
+  display:flex; align-items:center; justify-content:center;
+  color:#475569; font-size:.82rem;
+  overflow:hidden;
+}
+.slide-media img, .slide-media video {
+  width:100%; max-height:340px; object-fit:contain; border-radius:10px;
+}
+
+.pnav {
+  padding:14px 26px;
+  border-top:1px solid rgba(255,255,255,.06);
+  display:flex; align-items:center; justify-content:space-between;
+  flex-shrink:0;
+}
+.pnav-btn {
+  background:rgba(125,211,252,.08); border:1px solid rgba(125,211,252,.18);
+  color:#7dd3fc; padding:7px 18px; border-radius:8px;
+  cursor:pointer; font-size:.88rem; transition:all .14s;
+}
+.pnav-btn:hover:not(:disabled) { background:rgba(125,211,252,.18); }
+.pnav-btn:disabled { opacity:.3; cursor:not-allowed; }
+.pnav-ctr { font-size:.82rem; color:#64748b; }
+
+/* ─── Hydrogel View ─── */
+#hv {
+  position:fixed; inset:0;
+  background:#060d1f;
+  z-index:200;
+  display:none; flex-direction:column;
+  opacity:0; transition:opacity .32s;
+}
+#hv.open { display:flex; opacity:1; }
+
+.hv-hdr {
+  display:flex; align-items:center; gap:14px;
+  padding:16px 28px;
+  border-bottom:1px solid rgba(255,255,255,.07);
+  flex-shrink:0;
+}
+.hv-back {
+  background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1);
+  color:#94a3b8; padding:6px 14px; border-radius:7px;
+  cursor:pointer; font-size:.88rem; transition:all .14s;
+}
+.hv-back:hover { color:#7dd3fc; border-color:#7dd3fc; }
+.hv-title { font-size:1.05rem; font-weight:600; color:#34d399; }
+.hv-hint  { margin-left:auto; font-size:.76rem; color:#475569; }
+
+.hv-body {
+  flex:1; display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  padding:20px; gap:16px;
+  overflow:hidden;
+}
+
+#hv-svg { max-width:660px; width:100%; }
+
+/* particle drift animations */
+@keyframes d1 {
+  0%   {transform:translate(0,0);}
+  25%  {transform:translate(14px,-10px);}
+  50%  {transform:translate(-6px,-18px);}
+  75%  {transform:translate(-14px,-5px);}
+  100% {transform:translate(0,0);}
+}
+@keyframes d2 {
+  0%   {transform:translate(0,0);}
+  33%  {transform:translate(-12px,12px);}
+  66%  {transform:translate(10px,7px);}
+  100% {transform:translate(0,0);}
+}
+@keyframes d3 {
+  0%   {transform:translate(0,0);}
+  20%  {transform:translate(8px,14px);}
+  60%  {transform:translate(-10px,5px);}
+  100% {transform:translate(0,0);}
+}
+
+.hv-legend {
+  display:flex; flex-wrap:wrap; gap:10px; justify-content:center;
+  padding:6px 28px 14px;
+  flex-shrink:0;
+}
+.leg {
+  display:flex; align-items:center; gap:7px;
+  font-size:.8rem; color:#94a3b8;
+  cursor:pointer; padding:5px 12px;
+  border-radius:7px; border:1px solid transparent;
+  transition:all .14s;
+}
+.leg:hover { border-color:rgba(255,255,255,.15); color:#e2e8f0; }
+.leg-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+</style>
+</head>
+<body>
+
+<!-- ═══════ HEADER ═══════ -->
+<header>
+  <span class="hdr-title">SimCells Bioreactor — Interactive Model</span>
+  <span class="hdr-sub">Click on a section to explore the mathematical model</span>
+</header>
+
+<!-- ═══════ MAIN BIOREACTOR VIEW ═══════ -->
+<div id="main-view">
+  <div class="reactor-wrap">
+    <svg id="reactor-svg" viewBox="0 0 300 560" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="wallG" x1="0" x2="1" y1="0" y2="0">
+          <stop offset="0%"   stop-color="#1a2d4a"/>
+          <stop offset="45%"  stop-color="#2c4470"/>
+          <stop offset="55%"  stop-color="#2c4470"/>
+          <stop offset="100%" stop-color="#1a2d4a"/>
+        </linearGradient>
+        <linearGradient id="gasG" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%"   stop-color="#bfdbfe" stop-opacity=".18"/>
+          <stop offset="100%" stop-color="#93c5fd" stop-opacity=".04"/>
+        </linearGradient>
+        <linearGradient id="liqG" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%"   stop-color="#1d4ed8" stop-opacity=".42"/>
+          <stop offset="100%" stop-color="#1e3a8a" stop-opacity=".22"/>
+        </linearGradient>
+        <linearGradient id="gelG" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%"   stop-color="#065f46" stop-opacity=".9"/>
+          <stop offset="100%" stop-color="#022c22"/>
+        </linearGradient>
+        <pattern id="gelDots" patternUnits="userSpaceOnUse" width="7" height="7">
+          <circle cx="3.5" cy="3.5" r="1.3" fill="#34d399" fill-opacity=".3"/>
+        </pattern>
+        <pattern id="threadP" patternUnits="userSpaceOnUse" width="200" height="9">
+          <line x1="0" y1="4.5" x2="200" y2="4.5" stroke="#3f5a7a" stroke-width="1.3"/>
+        </pattern>
+      </defs>
+
+      <!-- ── Outer vessel walls ── -->
+      <rect x="36"  y="118" width="16" height="392" fill="url(#wallG)"/>
+      <rect x="248" y="118" width="16" height="392" fill="url(#wallG)"/>
+      <rect x="36"  y="502" width="228" height="14"  fill="url(#wallG)" rx="3"/>
+
+      <!-- ── Threaded top cap (gas inlet) ── -->
+      <rect x="52"  y="40"  width="196" height="80" fill="url(#wallG)" rx="4"/>
+      <rect x="52"  y="40"  width="196" height="80" fill="url(#threadP)" rx="4" opacity=".65"/>
+      <rect x="52"  y="40"  width="196" height="80" fill="none" stroke="#4a7aaa" stroke-width="1.4" rx="4"/>
+      <text x="150" y="85" fill="#7dd3fc" font-size="8" font-family="Segoe UI,sans-serif"
+            text-anchor="middle" opacity=".55">M45×4.5 6g</text>
+
+      <!-- ── Gas fill: top interior ── -->
+      <rect x="52"  y="118" width="196" height="104" fill="url(#gasG)"/>
+
+      <!-- ── Liquid in annular space (between vessels) ── -->
+      <rect x="52"  y="222" width="36"  height="280" fill="url(#liqG)"/>
+      <rect x="212" y="222" width="36"  height="280" fill="url(#liqG)"/>
+
+      <!-- ── Inner vessel walls (hydrogel container) ── -->
+      <rect x="88"  y="118" width="14" height="396" fill="#18304f" stroke="#3b6ea8" stroke-width="1"/>
+      <rect x="198" y="118" width="14" height="396" fill="#18304f" stroke="#3b6ea8" stroke-width="1"/>
+
+      <!-- ── Gas inside inner vessel ── -->
+      <rect x="102" y="118" width="96" height="104" fill="url(#gasG)"/>
+
+      <!-- ── Liquid inside inner vessel ── -->
+      <rect x="102" y="222" width="96" height="218" fill="url(#liqG)"/>
+
+      <!-- ── Hydrogel: bottom of inner vessel ── -->
+      <rect x="102" y="440" width="96" height="62" fill="url(#gelG)" rx="1"/>
+      <rect x="102" y="440" width="96" height="62" fill="url(#gelDots)" rx="1"/>
+
+      <!-- ── Stirrer blades (annular space, left) ── -->
+      <rect x="85" y="270" width="6"  height="82" rx="2" fill="#4a5f82"/>
+      <rect x="53" y="278" width="36" height="9"  rx="2" fill="#3a5070"
+            transform="rotate(-18,71,282)"/>
+      <rect x="53" y="298" width="36" height="9"  rx="2" fill="#4a6488"
+            transform="rotate(8,71,302)"/>
+      <rect x="53" y="320" width="36" height="9"  rx="2" fill="#3a5070"
+            transform="rotate(-14,71,324)"/>
+      <!-- shaft connector dots -->
+      <circle cx="88" cy="308" r="3" fill="#6080aa"/>
+
+      <!-- ── Stirrer blades (annular space, right) ── -->
+      <rect x="209" y="270" width="6"  height="82" rx="2" fill="#4a5f82"/>
+      <rect x="211" y="278" width="36" height="9"  rx="2" fill="#3a5070"
+            transform="rotate(18,229,282)"/>
+      <rect x="211" y="298" width="36" height="9"  rx="2" fill="#4a6488"
+            transform="rotate(-8,229,302)"/>
+      <rect x="211" y="320" width="36" height="9"  rx="2" fill="#3a5070"
+            transform="rotate(14,229,324)"/>
+      <circle cx="212" cy="308" r="3" fill="#6080aa"/>
+
+      <!-- ── Gas–liquid interface (wavy line) ── -->
+      <path d="M52 222 Q67 214 82 222 Q97 230 112 222 Q127 214 142 222
+               Q157 230 172 222 Q187 214 202 222 Q217 230 232 222 Q247 214 264 222"
+            fill="none" stroke="#93c5fd" stroke-width="2.2" opacity=".75"/>
+
+      <!-- ══════════════════════════════════════
+           INVISIBLE CLICKABLE HOTSPOT REGIONS
+           ══════════════════════════════════════ -->
+      <!-- Gas phase / cap -->
+      <rect x="52" y="40"  width="196" height="184" fill="transparent"
+            class="hot" onclick="openPanel('gas')"/>
+      <!-- Interface strip -->
+      <rect x="52" y="210" width="196" height="24"  fill="transparent"
+            class="hot" onclick="openPanel('interface')"/>
+      <!-- Stirrer left -->
+      <rect x="48" y="260" width="46"  height="100" fill="transparent"
+            class="hot" onclick="openPanel('stirrer')"/>
+      <!-- Stirrer right -->
+      <rect x="206" y="260" width="46" height="100" fill="transparent"
+            class="hot" onclick="openPanel('stirrer')"/>
+      <!-- Container walls -->
+      <rect x="86"  y="118" width="18" height="396" fill="transparent"
+            class="hot" onclick="openPanel('container')"/>
+      <rect x="196" y="118" width="18" height="396" fill="transparent"
+            class="hot" onclick="openPanel('container')"/>
+      <!-- Hydrogel -->
+      <rect x="102" y="440" width="96" height="62"  fill="transparent"
+            class="hot" onclick="openHydrogelView()"/>
+
+      <!-- ══════════════════════════════
+           PULSE INDICATOR DOTS
+           ══════════════════════════════ -->
+      <!-- Gas phase -->
+      <g onclick="openPanel('gas')" class="hot">
+        <circle cx="258" cy="78"  r="6" fill="#bae6fd"/>
+        <circle cx="258" cy="78"  r="6" fill="none" stroke="#bae6fd" stroke-width="1.5"
+                class="pulse-ring"/>
+      </g>
+      <!-- Gas-liquid interface -->
+      <g onclick="openPanel('interface')" class="hot">
+        <circle cx="258" cy="222" r="6" fill="#93c5fd"/>
+        <circle cx="258" cy="222" r="6" fill="none" stroke="#93c5fd" stroke-width="1.5"
+                class="pulse-ring" style="animation-delay:.55s"/>
+      </g>
+      <!-- Stirrer -->
+      <g onclick="openPanel('stirrer')" class="hot">
+        <circle cx="25"  cy="308" r="6" fill="#c4b5fd"/>
+        <circle cx="25"  cy="308" r="6" fill="none" stroke="#c4b5fd" stroke-width="1.5"
+                class="pulse-ring" style="animation-delay:1.1s"/>
+      </g>
+      <!-- Container -->
+      <g onclick="openPanel('container')" class="hot">
+        <circle cx="258" cy="340" r="6" fill="#fbbf24"/>
+        <circle cx="258" cy="340" r="6" fill="none" stroke="#fbbf24" stroke-width="1.5"
+                class="pulse-ring" style="animation-delay:1.65s"/>
+      </g>
+      <!-- Hydrogel -->
+      <g onclick="openHydrogelView()" class="hot">
+        <circle cx="150" cy="471" r="6" fill="#34d399"/>
+        <circle cx="150" cy="471" r="6" fill="none" stroke="#34d399" stroke-width="1.5"
+                class="pulse-ring" style="animation-delay:.8s"/>
+      </g>
+
+      <!-- ══════════════════════════════
+           SECTION LABELS
+           ══════════════════════════════ -->
+      <!-- Gas phase -->
+      <line x1="252" y1="73"  x2="238" y2="66"  stroke="#bae6fd" stroke-width=".8"
+            stroke-dasharray="3,2"/>
+      <text x="236" y="62" fill="#bae6fd" font-size="8"
+            font-family="Segoe UI,sans-serif" text-anchor="end">Gas phase</text>
+
+      <!-- Interface -->
+      <line x1="252" y1="217" x2="238" y2="230" stroke="#93c5fd" stroke-width=".8"
+            stroke-dasharray="3,2"/>
+      <text x="236" y="242" fill="#93c5fd" font-size="8"
+            font-family="Segoe UI,sans-serif" text-anchor="end">Gas–liquid</text>
+      <text x="236" y="252" fill="#93c5fd" font-size="8"
+            font-family="Segoe UI,sans-serif" text-anchor="end">interface</text>
+
+      <!-- Stirrer -->
+      <line x1="20"  y1="302" x2="14"  y2="288" stroke="#c4b5fd" stroke-width=".8"
+            stroke-dasharray="3,2"/>
+      <text x="12"  y="283" fill="#c4b5fd" font-size="8"
+            font-family="Segoe UI,sans-serif" text-anchor="end">Stirrer</text>
+
+      <!-- Container -->
+      <line x1="252" y1="335" x2="238" y2="322" stroke="#fbbf24" stroke-width=".8"
+            stroke-dasharray="3,2"/>
+      <text x="236" y="317" fill="#fbbf24" font-size="8"
+            font-family="Segoe UI,sans-serif" text-anchor="end">Hydrogel</text>
+      <text x="236" y="327" fill="#fbbf24" font-size="8"
+            font-family="Segoe UI,sans-serif" text-anchor="end">container</text>
+
+      <!-- Hydrogel -->
+      <line x1="150" y1="477" x2="150" y2="522" stroke="#34d399" stroke-width=".8"
+            stroke-dasharray="3,2"/>
+      <text x="150" y="534" fill="#34d399" font-size="8"
+            font-family="Segoe UI,sans-serif" text-anchor="middle">Hydrogel</text>
+    </svg>
+  </div>
+  <p class="hint">Click on any highlighted section to explore the model</p>
+</div>
+
+<!-- ═══════ SLIDE PANEL ═══════ -->
+<div id="panel">
+  <div class="ph">
+    <span class="ph-title" id="ph-title">Section</span>
+    <button class="ph-close" onclick="closePanel()">✕</button>
+  </div>
+  <div class="slide-area" id="slide-area"></div>
+  <div class="pnav">
+    <button class="pnav-btn" id="prev-btn" onclick="changeSlide(-1)">← Prev</button>
+    <span class="pnav-ctr" id="slide-ctr"></span>
+    <button class="pnav-btn" id="next-btn" onclick="changeSlide(1)">Next →</button>
+  </div>
+</div>
+
+<!-- ═══════ HYDROGEL DETAIL VIEW ═══════ -->
+<div id="hv">
+  <div class="hv-hdr">
+    <button class="hv-back" onclick="closeHydrogelView()">← Back to bioreactor</button>
+    <span class="hv-title">Hydrogel — Species Transport &amp; Cell Model</span>
+    <span class="hv-hint">Click a species or the cells to explore the model</span>
+  </div>
+  <div class="hv-body">
+    <svg id="hv-svg" viewBox="0 0 660 348" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="cellG" cx="35%" cy="32%">
+          <stop offset="0%"   stop-color="#86efac"/>
+          <stop offset="100%" stop-color="#14532d"/>
+        </radialGradient>
+        <radialGradient id="hvBg" cx="50%" cy="50%">
+          <stop offset="0%"   stop-color="#042f1d"/>
+          <stop offset="100%" stop-color="#020f0a"/>
+        </radialGradient>
+        <pattern id="hvDots" patternUnits="userSpaceOnUse" width="9" height="9">
+          <circle cx="4.5" cy="4.5" r="1.3" fill="#34d399" fill-opacity=".14"/>
+        </pattern>
+        <filter id="glo">
+          <feGaussianBlur stdDeviation="2.5" result="b"/>
+          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+
+      <!-- Background -->
+      <rect x="0" y="0" width="660" height="348" fill="url(#hvBg)" rx="10"/>
+      <rect x="0" y="0" width="660" height="348" fill="url(#hvDots)" rx="10"/>
+
+      <!-- Interface label -->
+      <line x1="0" y1="23" x2="660" y2="23"
+            stroke="#7dd3fc" stroke-width="1" stroke-dasharray="5,3" opacity=".32"/>
+      <text x="330" y="17" fill="#7dd3fc" font-size="9.5"
+            font-family="Segoe UI,sans-serif" text-anchor="middle" opacity=".65">
+        — Liquid medium interface —
+      </text>
+
+      <!-- ── Cells ── -->
+      <g class="hot" onclick="openPanel('cells')" filter="url(#glo)">
+        <ellipse cx="162" cy="182" rx="44" ry="34" fill="url(#cellG)" opacity=".88"/>
+        <ellipse cx="162" cy="182" rx="44" ry="34" fill="none" stroke="#4ade80" stroke-width="1.5"/>
+        <ellipse cx="162" cy="179" rx="13"  ry="11"  fill="#0f4023" opacity=".8"/>
+        <text x="162" y="228" fill="#86efac" font-size="9.5"
+              font-family="Segoe UI,sans-serif" text-anchor="middle">Cell</text>
+      </g>
+      <g class="hot" onclick="openPanel('cells')" filter="url(#glo)">
+        <ellipse cx="340" cy="258" rx="40" ry="30" fill="url(#cellG)" opacity=".88"/>
+        <ellipse cx="340" cy="258" rx="40" ry="30" fill="none" stroke="#4ade80" stroke-width="1.5"/>
+        <ellipse cx="340" cy="255" rx="12"  ry="10"  fill="#0f4023" opacity=".8"/>
+        <text x="340" y="300" fill="#86efac" font-size="9.5"
+              font-family="Segoe UI,sans-serif" text-anchor="middle">Cell</text>
+      </g>
+      <g class="hot" onclick="openPanel('cells')" filter="url(#glo)">
+        <ellipse cx="502" cy="172" rx="36" ry="28" fill="url(#cellG)" opacity=".88"/>
+        <ellipse cx="502" cy="172" rx="36" ry="28" fill="none" stroke="#4ade80" stroke-width="1.5"/>
+        <ellipse cx="502" cy="169" rx="11"  ry="9"   fill="#0f4023" opacity=".8"/>
+        <text x="502" y="212" fill="#86efac" font-size="9.5"
+              font-family="Segoe UI,sans-serif" text-anchor="middle">Cell</text>
+      </g>
+
+      <!-- ── CO₂ particles ── -->
+      <g class="hot" onclick="openPanel('co2-hydrogel')"
+         style="animation:d1 4s ease-in-out infinite">
+        <circle cx="62"  cy="82"  r="15" fill="#ef4444" opacity=".9" filter="url(#glo)"/>
+        <text x="62" y="86" fill="white" font-size="8.5" font-weight="bold"
+              font-family="Segoe UI,sans-serif" text-anchor="middle">CO₂</text>
+      </g>
+      <g class="hot" onclick="openPanel('co2-hydrogel')"
+         style="animation:d2 5.2s ease-in-out infinite">
+        <circle cx="248" cy="112" r="15" fill="#ef4444" opacity=".9" filter="url(#glo)"/>
+        <text x="248" y="116" fill="white" font-size="8.5" font-weight="bold"
+              font-family="Segoe UI,sans-serif" text-anchor="middle">CO₂</text>
+      </g>
+      <g class="hot" onclick="openPanel('co2-hydrogel')"
+         style="animation:d3 3.8s ease-in-out infinite">
+        <circle cx="425" cy="308" r="15" fill="#ef4444" opacity=".9" filter="url(#glo)"/>
+        <text x="425" y="312" fill="white" font-size="8.5" font-weight="bold"
+              font-family="Segoe UI,sans-serif" text-anchor="middle">CO₂</text>
+      </g>
+
+      <!-- ── O₂ particles ── -->
+      <g class="hot" onclick="openPanel('o2-hydrogel')"
+         style="animation:d2 4.6s ease-in-out infinite">
+        <circle cx="118" cy="295" r="15" fill="#3b82f6" opacity=".9" filter="url(#glo)"/>
+        <text x="118" y="299" fill="white" font-size="8.5" font-weight="bold"
+              font-family="Segoe UI,sans-serif" text-anchor="middle">O₂</text>
+      </g>
+      <g class="hot" onclick="openPanel('o2-hydrogel')"
+         style="animation:d1 3.5s ease-in-out infinite">
+        <circle cx="435" cy="68"  r="15" fill="#3b82f6" opacity=".9" filter="url(#glo)"/>
+        <text x="435" y="72" fill="white" font-size="8.5" font-weight="bold"
+              font-family="Segoe UI,sans-serif" text-anchor="middle">O₂</text>
+      </g>
+      <g class="hot" onclick="openPanel('o2-hydrogel')"
+         style="animation:d3 5.5s ease-in-out infinite">
+        <circle cx="570" cy="282" r="15" fill="#3b82f6" opacity=".9" filter="url(#glo)"/>
+        <text x="570" y="286" fill="white" font-size="8.5" font-weight="bold"
+              font-family="Segoe UI,sans-serif" text-anchor="middle">O₂</text>
+      </g>
+
+      <!-- ── NH₃ particles ── -->
+      <g class="hot" onclick="openPanel('nh3-hydrogel')"
+         style="animation:d3 4.4s ease-in-out infinite">
+        <circle cx="288" cy="52"  r="15" fill="#f59e0b" opacity=".9" filter="url(#glo)"/>
+        <text x="288" y="56" fill="white" font-size="8.5" font-weight="bold"
+              font-family="Segoe UI,sans-serif" text-anchor="middle">NH₃</text>
+      </g>
+      <g class="hot" onclick="openPanel('nh3-hydrogel')"
+         style="animation:d1 5.8s ease-in-out infinite">
+        <circle cx="528" cy="320" r="15" fill="#f59e0b" opacity=".9" filter="url(#glo)"/>
+        <text x="528" y="324" fill="white" font-size="8.5" font-weight="bold"
+              font-family="Segoe UI,sans-serif" text-anchor="middle">NH₃</text>
+      </g>
+
+      <!-- ── Lac⁻ particles ── -->
+      <g class="hot" onclick="openPanel('lac-hydrogel')"
+         style="animation:d2 3.3s ease-in-out infinite">
+        <circle cx="592" cy="108" r="15" fill="#a855f7" opacity=".9" filter="url(#glo)"/>
+        <text x="592" y="112" fill="white" font-size="7.5" font-weight="bold"
+              font-family="Segoe UI,sans-serif" text-anchor="middle">Lac⁻</text>
+      </g>
+      <g class="hot" onclick="openPanel('lac-hydrogel')"
+         style="animation:d3 5s ease-in-out infinite">
+        <circle cx="218" cy="322" r="15" fill="#a855f7" opacity=".9" filter="url(#glo)"/>
+        <text x="218" y="326" fill="white" font-size="7.5" font-weight="bold"
+              font-family="Segoe UI,sans-serif" text-anchor="middle">Lac⁻</text>
+      </g>
+    </svg>
+
+    <!-- Species legend -->
+    <div class="hv-legend">
+      <div class="leg" onclick="openPanel('co2-hydrogel')">
+        <div class="leg-dot" style="background:#ef4444"></div>CO₂ model
+      </div>
+      <div class="leg" onclick="openPanel('o2-hydrogel')">
+        <div class="leg-dot" style="background:#3b82f6"></div>O₂ model
+      </div>
+      <div class="leg" onclick="openPanel('nh3-hydrogel')">
+        <div class="leg-dot" style="background:#f59e0b"></div>NH₃ / NH₄⁺ model
+      </div>
+      <div class="leg" onclick="openPanel('lac-hydrogel')">
+        <div class="leg-dot" style="background:#a855f7"></div>Lactate model
+      </div>
+      <div class="leg" onclick="openPanel('cells')">
+        <div class="leg-dot" style="background:#4ade80"></div>Cell model
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ──────────────────────────────────────────────────────────────────
+// SLIDE CONTENT
+// To swap in a real MATLAB image: set  mediaFile: 'images/name.png'
+// To use a video:                 set  mediaFile: 'images/name.mp4',
+//                                      mediaType: 'video'
+// ──────────────────────────────────────────────────────────────────
+const SECTIONS = {
+
+  gas: {
+    title: 'Gas Phase',
+    slides: [
+      {
+        tag: 'Boundary condition',
+        heading: 'Gas Phase Composition',
+        text: 'The gas phase above the liquid supplies CO₂ and O₂ to the medium. Atmospheric CO₂ is set at 429 ppm and O₂ at 20.95 mol%. These partial pressures set the interfacial dissolved concentrations that drive mass transfer into solution.',
+        mediaLabel: '[ MATLAB plot: CO₂ and O₂ partial pressures ]',
+        mediaFile: null, mediaType: 'image'
+      },
+      {
+        tag: 'Weiss (1974)',
+        heading: 'Henry’s Law — CO₂ Solubility',
+        text: 'The dissolved CO₂ concentration at the gas–liquid interface is given by Henry’s law: [CO₂]* = K₀ · pCO₂. The solubility constant K₀ is a function of temperature and salinity, following Weiss (1974), Deep-Sea Res. 21:847–859.',
+        mediaLabel: '[ MATLAB plot: K₀ vs temperature at S = 35 ppt ]',
+        mediaFile: null, mediaType: 'image'
+      },
+      {
+        tag: 'Weiss (1970)',
+        heading: 'Henry’s Law — O₂ Solubility',
+        text: 'Dissolved O₂ at saturation is computed via Weiss (1970), Deep-Sea Res. 17:721–735. At 25 °C and S = 35 ppt, the equilibrium O₂ concentration is approximately 0.22 mol m⁻³. Solubility decreases with both temperature and salinity (salting-out effect).',
+        mediaLabel: '[ MATLAB plot: [O₂]* vs temperature and salinity ]',
+        mediaFile: null, mediaType: 'image'
+      }
+    ]
+  },
+
+  interface: {
+    title: 'Gas–Liquid Interface & Mass Transfer',
+    slides: [
+      {
+        tag: 'Two-film theory',
+        heading: 'Gas-Phase Mass Transfer',
+        text: 'CO₂ and O₂ exchange across the gas–liquid interface is modelled with two-film theory. The molar flux is J = kₗ (C* − Cₜᵤᵬᵏ), where C* is the Henry’s law interfacial concentration and kₗ is the liquid-phase mass transfer coefficient [m s⁻¹]. Only neutral species (CO₂, O₂) exchange across the interface — ionic species (HCO₃⁻, CO₃²⁻, OH⁻, H⁺) do not.',
+        mediaLabel: '[ MATLAB plot: CO₂ and O₂ flux J vs time ]',
+        mediaFile: null, mediaType: 'image'
+      },
+      {
+        tag: 'Empirical correlation',
+        heading: 'Mass Transfer Coefficient kₗ',
+        text: 'kₗ is computed from the mixing velocity v and liquid depth d. Species-specific kₗ values are scaled from the CO₂ reference by the square-root of diffusivity: kₗ,i = kₗ,CO₂ · √(Dᵢ/D₀).',
+        mediaLabel: '[ MATLAB plot: kₗ vs mixing velocity v ]',
+        mediaFile: null, mediaType: 'image'
+      },
+      {
+        tag: 'Zeebe (2011) · Ferrell & Himmelblau (1967)',
+        heading: 'Diffusivities in Seawater',
+        text: 'CO₂ diffusivity follows the power-law of Zeebe (2011), scaled for salinity via the dynamic viscosity of seawater (Sharqawy 2010). O₂ uses a Stokes–Einstein correction from Dₜᵉᶠ = 2.10 × 10⁻⁹ m² s⁻¹ at 25 °C (Ferrell & Himmelblau 1967).',
+        mediaLabel: '[ MATLAB plot: Dₙₒ₂ and Dₒ₂ vs temperature ]',
+        mediaFile: null, mediaType: 'image'
+      },
+      {
+        tag: 'ODE solution',
+        heading: '[CO₂] and [O₂] Dynamics',
+        text: 'The ODE solution tracks total inorganic carbon (TC) and dissolved O₂ as they evolve from initial values toward atmospheric equilibrium. Carbonate speciation (CO₂, HCO₃⁻, CO₃²⁻) and pH are recomputed algebraically at each timestep via a Newton–Raphson [H⁺] solver.',
+        mediaLabel: '[ MATLAB plot: [CO₂], [O₂], pH vs time ]',
+        mediaFile: null, mediaType: 'image'
+      }
+    ]
+  },
+
+  stirrer: {
+    title: 'Stirrer — Mixing Model',
+    slides: [
+      {
+        tag: 'Bioreactor design',
+        heading: 'Stirrer Geometry',
+        text: 'Stirrer blades are located in the annular space between the inner and outer vessels. The blade radius is 26.37 mm. Mixing velocity used in the kₗ correlation is v = π × r × N, where N is the rotation frequency [s⁻¹]. At 3 rev s⁻¹, v ≈ 0.249 m s⁻¹.',
+        mediaLabel: '[ Engineering drawing: stirrer dimensions ]',
+        mediaFile: null, mediaType: 'image'
+      },
+      {
+        tag: 'Mass transfer',
+        heading: 'Effect of Mixing on kₗ',
+        text: 'kₗ scales as a power-law with mixing velocity. Increasing the rotation speed directly controls gas transfer rates for both O₂ and CO₂, and is the primary operational parameter for maintaining dissolved gas concentrations at target values.',
+        mediaLabel: '[ MATLAB plot: kₗ,O₂ and kₗ,CO₂ vs rotation speed ]',
+        mediaFile: null, mediaType: 'image'
+      }
+    ]
+  },
+
+  container: {
+    title: 'Hydrogel Container',
+    slides: [
+      {
+        tag: 'Bioreactor design',
+        heading: 'Container Geometry',
+        text: 'The inner cylindrical vessel (hydrogel container) has an internal depth of 114.44 mm. Its wall separates the well-mixed liquid medium (annular space) from the diffusion-limited hydrogel interior. Container dimensions set by the engineering drawing (Choreno Machain, 28/05/2026).',
+        mediaLabel: '[ Engineering drawing: container cross-section ]',
+        mediaFile: null, mediaType: 'image'
+      },
+      {
+        tag: 'Modelling',
+        heading: 'Boundary Conditions',
+        text: 'The outer surface of the hydrogel is in contact with the bulk liquid medium. Species concentrations at this boundary are supplied by the bulk ODE solution (TC, TN, TL, O₂) and applied as Dirichlet boundary conditions to the radial diffusion–reaction model inside the hydrogel.',
+        mediaLabel: '[ MATLAB diagram: bulk ↔ hydrogel BC schematic ]',
+        mediaFile: null, mediaType: 'image'
+      }
+    ]
+  },
+
+  'co2-hydrogel': {
+    title: 'CO₂ Transport in Hydrogel',
+    slides: [
+      {
+        tag: 'Fick’s second law',
+        heading: 'CO₂ Diffusion Profile',
+        text: 'CO₂ diffuses radially inward from the container wall following Fick’s second law in cylindrical co-ordinates. The effective diffusivity in the hydrogel matrix is reduced relative to free solution by the tortuosity factor.',
+        mediaLabel: '[ MATLAB plot: [CO₂] radial profile at different times ]',
+        mediaFile: null, mediaType: 'image'
+      },
+      {
+        tag: 'Millero (1994)',
+        heading: 'Carbonate Equilibrium',
+        text: 'CO₂ is in rapid equilibrium with HCO₃⁻ and CO₃²⁻ throughout the hydrogel. DIC speciation is recomputed at each radial grid point from the local total inorganic carbon (TC) and H⁺ concentration, using the temperature- and salinity-dependent K₁ and K₂ of Millero (1994).',
+        mediaLabel: '[ MATLAB plot: CO₂, HCO₃⁻, CO₃²⁻ vs radial position ]',
+        mediaFile: null, mediaType: 'image'
+      }
+    ]
+  },
+
+  'o2-hydrogel': {
+    title: 'O₂ Transport in Hydrogel',
+    slides: [
+      {
+        tag: 'Diffusion–reaction',
+        heading: 'O₂ Diffusion & Consumption',
+        text: 'O₂ diffuses inward from the hydrogel boundary and is consumed by cells via aerobic respiration. The steady-state radial profile reflects the balance between diffusion flux and Michaelis–Menten cellular uptake. The effective diffusivity follows a Stokes–Einstein correction (Ferrell & Himmelblau 1967).',
+        mediaLabel: '[ MATLAB plot: [O₂] radial profile at various cell densities ]',
+        mediaFile: null, mediaType: 'image'
+      },
+      {
+        tag: 'Critical design parameter',
+        heading: 'O₂ Limitation at the Centre',
+        text: 'Anoxia at the hydrogel centre is the primary viability risk in thick hydrogel constructs for cultured meat. The minimum central [O₂] depends on the hydrogel radius, cell density, and the bulk O₂ maintained by the stirrer system.',
+        mediaLabel: '[ MATLAB plot: central [O₂] vs hydrogel radius ]',
+        mediaFile: null, mediaType: 'image'
+      }
+    ]
+  },
+
+  'nh3-hydrogel': {
+    title: 'NH₃ / NH₄⁺ in Hydrogel',
+    slides: [
+      {
+        tag: 'Khoo et al. (1977)',
+        heading: 'Ammonia Speciation',
+        text: 'Cells excrete ammonium as a metabolic waste product. Within the hydrogel, total ammonium (TN) partitions between NH₃ and NH₄⁺ according to the temperature- and salinity-dependent pKₐ from Khoo, Culberson & Bates (1977), J. Solution Chem. 6(4):281–290. The pKₐ is given by A/T + B + C·T with constants selected for the nearest tabulated salinity.',
+        mediaLabel: '[ MATLAB plot: [NH₃], [NH₄⁺] radial profile ]',
+        mediaFile: null, mediaType: 'image'
+      },
+      {
+        tag: 'Cell viability',
+        heading: 'Ammonia Toxicity',
+        text: 'NH₃ (the neutral, membrane-permeable form) is toxic to cells at elevated concentrations. Its local concentration depends on both total ammonium and local pH — acidic conditions shift speciation towards NH₄⁺, reducing free ammonia and toxicity.',
+        mediaLabel: '[ MATLAB plot: [NH₃] vs pH at 25 °C and 37 °C ]',
+        mediaFile: null, mediaType: 'image'
+      }
+    ]
+  },
+
+  'lac-hydrogel': {
+    title: 'Lactate in Hydrogel',
+    slides: [
+      {
+        tag: 'Glycolysis',
+        heading: 'Lactic Acid Production',
+        text: 'Cells produce lactic acid as a by-product of glycolysis, particularly under hypoxic conditions. Lactic acid (pKₐ = 3.86, CRC Handbook) partially dissociates to lactate (C₃H₅O₃⁻) and H⁺, contributing to the total alkalinity balance and lowering pH.',
+        mediaLabel: '[ MATLAB plot: [Lac⁻], [HLac] vs radial position ]',
+        mediaFile: null, mediaType: 'image'
+      },
+      {
+        tag: 'Acid–base chemistry',
+        heading: 'pH Impact',
+        text: 'Lactate accumulation at the hydrogel centre lowers pH, which affects cell viability and shifts both carbonate and ammonia speciation. The pH radial profile is computed from total alkalinity (TA), TC, TN, and TL via the Newton–Raphson [H⁺] solver at each grid point.',
+        mediaLabel: '[ MATLAB plot: pH radial profile at different TL ]',
+        mediaFile: null, mediaType: 'image'
+      }
+    ]
+  },
+
+  cells: {
+    title: 'Cell Model',
+    slides: [
+      {
+        tag: 'Biological model',
+        heading: 'Cell Metabolism',
+        text: 'Cells embedded in the hydrogel consume O₂ and glucose while producing CO₂, lactic acid, and ammonia. Metabolic fluxes are described by Michaelis–Menten kinetics with respect to local O₂ concentration. Under hypoxia, glycolytic flux increases and lactate production rises.',
+        mediaLabel: '[ MATLAB diagram: metabolic pathway schematic ]',
+        mediaFile: null, mediaType: 'image'
+      },
+      {
+        tag: 'Cell dynamics',
+        heading: 'Growth & Proliferation',
+        text: 'Cell density evolves over time as cells proliferate within the hydrogel scaffold. Growth rate is limited by local O₂ and nutrient availability. As density increases, diffusion gradients steepen — which may ultimately limit the viable tissue thickness.',
+        mediaLabel: '[ MATLAB plot: cell density vs time and radial position ]',
+        mediaFile: null, mediaType: 'image'
+      }
+    ]
+  }
+};
+
+// ── State ─────────────────────────────────────────────────────
+let curSection = null;
+let curSlide   = 0;
+
+// ── Panel functions ───────────────────────────────────────────
+function openPanel(key) {
+  const sec = SECTIONS[key];
+  if (!sec) return;
+  curSection = key;
+  curSlide   = 0;
+  document.getElementById('ph-title').textContent = sec.title;
+  renderSlide();
+  document.getElementById('panel').classList.add('open');
+}
+
+function closePanel() {
+  document.getElementById('panel').classList.remove('open');
+}
+
+function renderSlide() {
+  const sec   = SECTIONS[curSection];
+  const slide = sec.slides[curSlide];
+  const total = sec.slides.length;
+
+  let mediaHTML;
+  if (slide.mediaFile) {
+    mediaHTML = slide.mediaType === 'video'
+      ? `<video src="${slide.mediaFile}" controls autoplay muted loop></video>`
+      : `<img src="${slide.mediaFile}" alt="${slide.heading}">`;
+  } else {
+    mediaHTML = `<span>${slide.mediaLabel}</span>`;
+  }
+
+  document.getElementById('slide-area').innerHTML =
+    `<span class="slide-tag">${slide.tag}</span>
+     <h2>${slide.heading}</h2>
+     <p>${slide.text}</p>
+     <div class="slide-media">${mediaHTML}</div>`;
+
+  document.getElementById('slide-ctr').textContent = `${curSlide + 1} / ${total}`;
+  document.getElementById('prev-btn').disabled = curSlide === 0;
+  document.getElementById('next-btn').disabled = curSlide === total - 1;
+}
+
+function changeSlide(dir) {
+  const total = SECTIONS[curSection].slides.length;
+  curSlide = Math.max(0, Math.min(total - 1, curSlide + dir));
+  renderSlide();
+}
+
+// ── Hydrogel view functions ───────────────────────────────────
+function openHydrogelView() {
+  const hv = document.getElementById('hv');
+  hv.style.display = 'flex';
+  requestAnimationFrame(() => hv.classList.add('open'));
+  closePanel();
+}
+
+function closeHydrogelView() {
+  const hv = document.getElementById('hv');
+  hv.classList.remove('open');
+  hv.addEventListener('transitionend', () => { hv.style.display = 'none'; }, { once: true });
+}
+
+// ── Keyboard shortcuts ────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if (document.getElementById('hv').classList.contains('open')) closeHydrogelView();
+    else closePanel();
+  }
+  if (!curSection) return;
+  if (e.key === 'ArrowRight') changeSlide(1);
+  if (e.key === 'ArrowLeft')  changeSlide(-1);
+});
+</script>
+</body>
+</html>
