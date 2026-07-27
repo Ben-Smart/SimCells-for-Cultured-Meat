@@ -769,9 +769,9 @@ const SECTIONS = {
       {
         tag: 'Sufficiency analysis',
         heading: 'Is the Shaker Alone Sufficient?',
-        text: 'At the operating RPM, the shaker-driven k<sub>L</sub> must sustain dissolved O₂ above the cellular K<sub>m</sub> and keep pCO₂ within a physiological range (< 80 mmHg). The sensitivity sweep shows steady-state [O₂] and free CO₂ as a function of RPM. Below a critical RPM, O₂ supply cannot match demand and the hydrogel becomes hypoxic. Above it, the shaker alone is adequate without additional gas sparging.',
-        mediaLabel: '[ Figure: sensitivity result — sufficiency threshold ]',
-        mediaFile: null, mediaType: 'image'
+        text: 'The final frame of the simulation shows the steady-state concentration fields across the bioreactor. Dissolved O₂ (panel 3) remains at adequate levels throughout the hydrogel — the shaker-driven k<sub>L</sub> is sufficient to meet cellular demand at the nominal RPM. Free dissolved CO₂ (panel 4), however, is elevated in the hydrogel interior, indicating that CO₂ produced by the SimCells is not being stripped fast enough. This elevated CO₂ shifts the carbonate equilibrium, reducing local pH and thereby lowering NH₃ availability for arginine synthesis. Whether a stirrer is required depends on the effective gel-phase diffusivity D<sub>eff</sub> — this will be resolved once the second diffusivity experiment is complete. Current assessment: shaker sufficient for O₂; CO₂ accumulation is the primary concern.',
+        mediaLabel: null,
+        mediaFile: 'images/shaker_steady_state.png', mediaType: 'image'
       }
     ]
   },
@@ -845,8 +845,8 @@ const SECTIONS = {
         tag: 'pH effect on SimCells',
         heading: 'Effect of pH on Arginine Production',
         text: 'Local pH inside the hydrogel influences arginine yield through two mechanisms: (1) NH₃/NH₄⁺ speciation — at lower pH more NH₃ converts to NH₄⁺ which cannot cross the membrane, starving the gdhA pathway; (2) enzyme activity — argJ and gdhA show reduced V<sub>max</sub> below pH 7.0. The model captures both effects through the solve_H_buf step and the speciation fraction applied to NH₃ transport.',
-        mediaLabel: '[ Figure: arginine yield vs local pH ]',
-        mediaFile: null, mediaType: 'image'
+        mediaLabel: null,
+        mediaFile: 'images/Arginine_pH_dependent.png', mediaType: 'image'
       },
       {
         tag: 'Salinity sensitivity',
