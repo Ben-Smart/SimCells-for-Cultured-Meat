@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 820"
+     font-family="'Segoe UI', Arial, sans-serif">
+  <defs>
+    <marker id="aR" markerWidth="9" markerHeight="8" refX="8" refY="4" orient="auto">
+      <polygon points="0,0 0,8 9,4" fill="#f87171"/>
+    </marker>
+    <marker id="aB" markerWidth="9" markerHeight="8" refX="8" refY="4" orient="auto">
+      <polygon points="0,0 0,8 9,4" fill="#60a5fa"/>
+    </marker>
+    <marker id="aG" markerWidth="9" markerHeight="8" refX="8" refY="4" orient="auto">
+      <polygon points="0,0 0,8 9,4" fill="#475569"/>
+    </marker>
+    <linearGradient id="gGas" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#0f2345"/>
+      <stop offset="100%" stop-color="#0b1c38"/>
+    </linearGradient>
+    <linearGradient id="gLiq" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#06101f"/>
+      <stop offset="100%" stop-color="#030b18"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1100" height="820" fill="#0b1428"/>
+
+  <!-- Gas phase zone -->
+  <rect x="12" y="12" width="1076" height="178" rx="10" fill="url(#gGas)" stroke="#1d3a60" stroke-width="1.2"/>
+
+  <!-- Liquid phase zone -->
+  <rect x="12" y="220" width="1076" height="588" rx="10" fill="url(#gLiq)" stroke="#1d3a60" stroke-width="1.2"/>
+
+  <!-- Zone headers -->
+  <text x="34" y="40"  fill="#7dd3fc" font-size="13" font-weight="700" letter-spacing="3" opacity="0.8">GAS PHASE</text>
+  <text x="34" y="248" fill="#7dd3fc" font-size="13" font-weight="700" letter-spacing="3" opacity="0.8">LIQUID PHASE</text>
+
+  <!-- Wavy interface -->
+  <path d="M12,196 C55,182 100,210 150,196 C200,182 245,210 295,196 C345,182 390,210 440,196
+           C490,182 535,210 585,196 C635,182 680,210 730,196 C780,182 825,210 875,196
+           C925,182 970,210 1020,196 C1060,182 1082,206 1088,196"
+        fill="none" stroke="#93c5fd" stroke-width="2.2" opacity="0.65"/>
+  <text x="550" y="212" fill="#93c5fd" font-size="11" text-anchor="middle" letter-spacing="2" opacity="0.65">──  GAS–LIQUID INTERFACE  ──</text>
+
+  <!-- CO2 molecule circle -->
+  <circle cx="80" cy="100" r="36" fill="#3b0606" opacity="0.85"/>
+  <circle cx="80" cy="100" r="36" fill="none" stroke="#f87171" stroke-width="2" opacity="0.55"/>
+  <text x="80" y="108" fill="#fca5a5" font-size="17" font-weight="700" text-anchor="middle">CO₂</text>
+  <text x="132" y="88" fill="#f87171" font-size="26" font-weight="700">CO₂</text>
+  <line x1="80" y1="140" x2="80" y2="184" stroke="#f87171" stroke-width="3" marker-end="url(#aR)" opacity="0.8"/>
+  <text x="96" y="170" fill="#f87171" font-size="11" opacity="0.7">dissolves</text>
+
+  <!-- O2 molecule circle -->
+  <circle cx="340" cy="100" r="36" fill="#0b1e4a" opacity="0.85"/>
+  <circle cx="340" cy="100" r="36" fill="none" stroke="#60a5fa" stroke-width="2" opacity="0.55"/>
+  <text x="340" y="108" fill="#93c5fd" font-size="17" font-weight="700" text-anchor="middle">O₂</text>
+  <text x="392" y="88" fill="#60a5fa" font-size="26" font-weight="700">O₂</text>
+  <line x1="340" y1="140" x2="340" y2="184" stroke="#60a5fa" stroke-width="3" marker-end="url(#aB)" opacity="0.8"/>
+  <text x="356" y="170" fill="#60a5fa" font-size="11" opacity="0.7">dissolves</text>
+
+  <!-- Liquid: CO2 carbonate chain  (font +5 from original) -->
+  <text x="34"  y="290" fill="#475569" font-size="16">from gas phase ↓</text>
+  <text x="34"  y="322" fill="#f87171"  font-size="23" font-weight="700">CO₂(aq)</text>
+  <text x="178" y="322" fill="#334155"  font-size="27">⇌</text>
+  <text x="215" y="322" fill="#fbbf24"  font-size="23" font-weight="700">H₂CO₃</text>
+  <text x="368" y="322" fill="#334155"  font-size="27">⇌</text>
+  <text x="405" y="322" fill="#34d399"  font-size="23" font-weight="700">HCO₃⁻</text>
+  <text x="558" y="325" fill="#475569"  font-size="22">+</text>
+  <text x="583" y="322" fill="#f472b6"  font-size="23" font-weight="700">H⁺</text>
+  <text x="626" y="322" fill="#334155"  font-size="27">⇌</text>
+  <text x="663" y="322" fill="#a78bfa"  font-size="23" font-weight="700">CO₃²⁻</text>
+  <text x="820" y="325" fill="#475569"  font-size="22">+</text>
+  <text x="845" y="322" fill="#f472b6"  font-size="23" font-weight="700">H⁺</text>
+  <!-- pKa below chain -->
+  <text x="196" y="352" fill="#334155" font-size="16" text-anchor="middle">hydration (fast)</text>
+  <text x="386" y="352" fill="#334155" font-size="16" text-anchor="middle">pKa1 = 6.35</text>
+  <text x="644" y="352" fill="#334155" font-size="16" text-anchor="middle">pKa2 = 10.33</text>
+
+  <!-- Liquid: O2 row -->
+  <text x="34"  y="400" fill="#475569" font-size="16">from gas phase ↓</text>
+  <text x="34"  y="433" fill="#60a5fa" font-size="23" font-weight="700">O₂(aq)</text>
+  <line x1="160" y1="420" x2="310" y2="420" stroke="#334155" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#aG)"/>
+  <text x="324" y="430" fill="#475569" font-size="18" font-style="italic">consumed by SimCells (respiration)</text>
+
+  <!-- Separator -->
+  <line x1="20" y1="466" x2="1080" y2="466" stroke="#1e3a5f" stroke-width="1.2" stroke-dasharray="7,5"/>
+  <text x="550" y="462" fill="#475569" font-size="15" text-anchor="middle" letter-spacing="1.5">pH-DETERMINING EQUILIBRIA</text>
+
+  <!-- Lactic acid -->
+  <text x="34"  y="520" fill="#fb923c" font-size="23" font-weight="700">H-Lac</text>
+  <text x="174" y="520" fill="#334155" font-size="27">⇌</text>
+  <text x="211" y="520" fill="#fdba74" font-size="23" font-weight="700">Lac⁻</text>
+  <text x="316" y="523" fill="#475569" font-size="22">+</text>
+  <text x="341" y="520" fill="#f472b6" font-size="23" font-weight="700">H⁺</text>
+  <text x="392" y="520" fill="#334155" font-size="18">pKa = 3.86</text>
+  <text x="341" y="550" fill="#f472b6" font-size="17" opacity="0.8">releases H⁺  →  lowers pH</text>
+
+  <!-- Ammonia -->
+  <text x="34"  y="618" fill="#4ade80" font-size="23" font-weight="700">NH₄⁺</text>
+  <text x="174" y="618" fill="#334155" font-size="27">⇌</text>
+  <text x="211" y="618" fill="#86efac" font-size="23" font-weight="700">NH₃</text>
+  <text x="316" y="621" fill="#475569" font-size="22">+</text>
+  <text x="341" y="618" fill="#f472b6" font-size="23" font-weight="700">H⁺</text>
+  <text x="392" y="618" fill="#334155" font-size="18">pKa = 9.25</text>
+  <text x="211" y="650" fill="#86efac" font-size="17" opacity="0.8">neutral — crosses cell membrane freely  →  available at higher pH</text>
+
+  <!-- pH summary box -->
+  <rect x="630" y="474" width="450" height="320" rx="9"
+        fill="rgba(244,114,182,0.05)" stroke="rgba(244,114,182,0.2)" stroke-width="1.2"/>
+  <text x="855" y="504" fill="#f472b6" font-size="18" text-anchor="middle" font-weight="700" letter-spacing="2" opacity="0.95">[H+] BALANCE SETS pH</text>
+  <text x="648" y="540" fill="#f87171"  font-size="18">•  CO₂ ↑   →   H⁺ ↑   →   <tspan fill="#f472b6">pH ↓</tspan></text>
+  <text x="648" y="576" fill="#fb923c"  font-size="18">•  Lac⁻ production   →   H⁺ ↑   →   <tspan fill="#f472b6">pH ↓</tspan></text>
+  <text x="648" y="612" fill="#4ade80"  font-size="18">•  NH₃ uptake by cells   →   H⁺ ↑   →   <tspan fill="#f472b6">pH ↓</tspan></text>
+  <text x="648" y="648" fill="#60a5fa"  font-size="18">•  CO₂ out-gassing   →   H⁺ ↓   →   <tspan fill="#86efac">pH ↑</tspan></text>
+  <text x="855" y="762" fill="#475569" font-size="16" text-anchor="middle">gas transfer controls pH  →  sets NH₃ availability  →  arginine yield</text>
+
+</svg>
