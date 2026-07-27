@@ -839,23 +839,6 @@ const SECTIONS = {
     title: 'Species Transport in Hydrogel',
     slides: [
       {
-        tag: '1-D bioreactor model',
-        heading: 'Molecular Transport — Current Model',
-        text: 'The 1-D ODE model tracks dissolved species concentrations across the bioreactor and hydrogel. Lactic acid and ammonia are consumed within the hydrogel by the SimCells and can still reach a stable steady-state in the bulk medium. The model currently needs extending for O₂ and CO₂: these species require additional reaction terms to capture cellular consumption (O₂) and production (CO₂) inside the hydrogel. The plot below shows an example of lactate being consumed by SimCells while the bulk concentration reaches a steady state — demonstrating that cellular uptake and gas transfer can be balanced in this bioreactor system.',
-        mediaFile: 'images/1d_reactor.png', mediaType: 'image',
-        mediaFile2: 'images/lac_simcell.png',
-        mediaLabel2: null
-      },
-      {
-        tag: 'pH & ammonia transport',
-        heading: 'pH Controls NH₃ Availability for Arginine Synthesis',
-        text: 'The pH of the local environment around the SimCells critically affects arginine production. NH₃ — the neutral, uncharged form of ammonium — crosses cell membranes freely and is the nitrogen source for arginine synthesis via the gdhA pathway. NH₄⁺ transport into the cell is very low. Because the NH₃/NH₄⁺ equilibrium is strongly pH-dependent (pKₐ ≈ 9.25), a drop in local pH shifts speciation towards NH₄⁺, drastically reducing available NH₃ and limiting arginine yield. This means that adequate gas transfer (maintaining CO₂ and O₂ balance) is essential to keep the local pH high enough for efficient NH₃ uptake and arginine synthesis.',
-        mediaFile: 'images/ph_effect.png', mediaType: 'image',
-        mediaFile2: 'images/Ammonia_pH.png',
-        mediaLabel2: null,
-        mediaLabel: null
-      },
-      {
         tag: 'SimCell gas consumption',
         heading: 'O₂ Consumption and CO₂ Production in Hydrogel',
         text: 'SimCells consume O₂ and produce CO₂ at uniform volumetric rates across all biofilm nodes. These rates were estimated from literature (mammalian cell basal metabolic rates) and are applied as source/sink terms in the 2-D PDE. The dissolved O₂ and CO₂ profiles shown are steady-state outputs of the sensitivity sweep at the nominal operating RPM. Adequate O₂ supply to the hydrogel interior requires both sufficient bulk k<sub>L</sub> and high enough gel-phase diffusivity.',
