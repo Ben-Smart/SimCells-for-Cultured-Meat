@@ -511,13 +511,11 @@ header {
     <div class="nb-inner">
       <div class="nb-title">&#x1F4DD;&nbsp; To do before next talk&nbsp;<span class="nb-chevron">&#x25BE;</span></div>
       <ul class="nb-items">
-        <li>Finish salinity sensitivity sweep and add figures to shaker slides</li>
-        <li>Add k_L vs RPM figure for O₂ and CO₂ to shaker section</li>
-        <li>Add spent-medium Day 2 figure to liquid section</li>
-        <li>Show FRAP data and propose next diffusivity experiment</li>
-        <li>Fill in arginine pathway parameter fitting slide</li>
-        <li>Add 2-D concentration field figures to hydrogel section</li>
-        <li>Run temperature sensitivity analysis</li>
+        <li>Diffusivity parameters from 2nd experiment</li>
+        <li>Arginine pathway parameters</li>
+        <li>First examples of SimCells with the TCA cycle</li>
+        <li>FGF2 Model</li>
+        <li>Work on adding the mammal cell flux model in another segment</li>
       </ul>
     </div>
   </div>
@@ -890,8 +888,8 @@ const SECTIONS = {
         tag: 'Model parameter fitting',
         heading: 'Arginine Pathway — Data Needed to Fit the Model',
         text: 'The arginine synthesis ODE requires the following experimentally measured quantities before the model can be fitted: (1) V<sub>max</sub> and K<sub>m</sub> for argJ (OAT/acetylornithinase) — purified enzyme assay or whole-cell flux measurement at known substrate concentrations; (2) V<sub>max</sub> and K<sub>m</sub> for argH (argininosuccinate lyase) — literature values exist for <em>M. tuberculosis</em> but not for the SimCell organism; (3) K<sub>m,export</sub> and V<sub>max,export</sub> for ArgO — the arginine exporter is poorly characterised, K<sub>m</sub> likely 1–5 mM rather than the current placeholder of 20 mM; (4) intracellular co-substrate concentrations: CbmP, ATP, Asp — these require metabolomics. Priority measurements are (3) and (4) as they most directly limit model predictive power.',
-        mediaLabel: '[ Diagram: arginine pathway with unknown parameters highlighted ]',
-        mediaFile: null, mediaType: 'image'
+        mediaLabel: null,
+        mediaFile: 'images/arg_pathway_annotated.svg', mediaType: 'image'
       }
     ]
   }
