@@ -797,13 +797,6 @@ const SECTIONS = {
         text: 'Measured ion concentrations and pCO₂ from spent-medium experiments (202606_mammalian cell spent medium.csv) were used to set the initial conditions and inlet boundary concentrations. Day 2 data were chosen as the model start point because they reflect the real culture state at the beginning of the modelled experimental window: Na⁺ = 147.6 mM, K⁺ = 4.16 mM, Ca²⁺ = 0.765 mM, NH₄⁺ = 1.18 mM, Lac = 0.035 mM, pH = 7.745, pCO₂ = 4.30 mmHg, S = 9.40 PSU. Day 0 values were not used because the cells had already been cultured for two days before the experiment started.',
         mediaLabel: null,
         mediaFile: 'images/Media_consentrations_day2.png', mediaType: 'image'
-      },
-      {
-        tag: 'Diffusivity measurements',
-        heading: 'Molecular Diffusivities — Current Data and Next Steps',
-        text: 'Species-specific diffusivities in both the liquid phase and hydrogel are required for the 2-D model. Current values are taken from literature (liquid phase at 37 °C): D<sub>O₂</sub> = 2.10×10⁻⁹, D<sub>CO₂</sub> = 1.91×10⁻⁹, D<sub>lac</sub> = 1.08×10⁻⁹, D<sub>NH₄</sub> = 1.96×10⁻⁹, D<sub>arg</sub> = 0.68×10⁻⁹ m² s⁻¹. The first experiment to measure the effective diffusivity D<sub>eff</sub> in the hydrogel did not yield a reliable passive diffusion coefficient. The fitted D<sub>eff</sub> values (figure below) are anomalously high — consistent with a convective or advective mass-transport contribution rather than pure passive diffusion through the gel matrix. The experimental setup needs to be revised to eliminate bulk fluid movement before a meaningful diffusivity can be extracted. The next proposed experiment is [describe next experiment here].',
-        mediaLabel: null,
-        mediaFile: 'images/D_eff.png', mediaType: 'image'
       }
     ]
   },
@@ -889,6 +882,13 @@ const SECTIONS = {
         text: 'Temperature affects gas solubility (Henry constants decrease with temperature), diffusivities (increase with temperature), and enzyme kinetics (Arrhenius). The model currently runs at 37 °C. A temperature sensitivity analysis is planned to bracket the effect of incubator temperature variation (±1 °C) on dissolved gas profiles and arginine yield.',
         mediaLabel: '[ Figure: planned temperature sensitivity ]',
         mediaFile: null, mediaType: 'image'
+      },
+      {
+        tag: 'Diffusivity measurements',
+        heading: 'Molecular Diffusivities — Current Data and Next Steps',
+        text: 'Species-specific diffusivities in both the liquid phase and hydrogel are required for the 2-D model. Current values are taken from literature (liquid phase at 37 °C): D<sub>O₂</sub> = 2.10×10⁻⁹, D<sub>CO₂</sub> = 1.91×10⁻⁹, D<sub>lac</sub> = 1.08×10⁻⁹, D<sub>NH₄</sub> = 1.96×10⁻⁹, D<sub>arg</sub> = 0.68×10⁻⁹ m² s⁻¹. The first experiment to measure the effective diffusivity D<sub>eff</sub> in the hydrogel did not yield a reliable passive diffusion coefficient. The fitted D<sub>eff</sub> values (figure below) are anomalously high — consistent with a convective or advective mass-transport contribution rather than pure passive diffusion through the gel matrix. The experimental setup needs to be revised to eliminate bulk fluid movement before a meaningful diffusivity can be extracted. The next proposed experiment is [describe next experiment here].',
+        mediaLabel: null,
+        mediaFile: 'images/D_eff.png', mediaType: 'image'
       }
     ]
   },
