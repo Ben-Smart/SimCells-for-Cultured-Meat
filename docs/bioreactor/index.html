@@ -762,7 +762,7 @@ const SECTIONS = {
       {
         tag: 'SimCell gas demand',
         heading: 'O₂ Consumption and CO₂ Production by SimCells',
-        text: 'SimCells consume O₂ and produce CO₂ at rates q<sub>O₂</sub> and q<sub>CO₂</sub> [mol m⁻³ s⁻¹], applied uniformly across all biofilm nodes. These rates set the minimum gas-transfer flux that the shaker must supply. Comparing the cellular demand against the shaker-driven supply determines whether orbital mixing alone is sufficient to prevent O₂ depletion or CO₂ accumulation.',
+        text: 'SimCells consume O₂ and produce CO₂ at rates q<sub>O₂</sub> and q<sub>CO₂</sub> [mol m⁻³ s⁻¹] applied uniformly across all biofilm nodes. At steady state the shaker-driven k<sub>L</sub> supplies O₂ fast enough that dissolved O₂ does not run out — the model predicts adequate oxygenation across the hydrogel at the nominal operating RPM. However, CO₂ accumulates to elevated concentrations in the hydrogel interior, suggesting that CO₂ removal by the shaker alone may be limiting. Whether additional stirring is required to improve CO₂ stripping depends critically on the effective gel-phase diffusivity D<sub>eff</sub>: if D<sub>eff</sub> is high enough, CO₂ can escape laterally without forced convection. We will revisit this conclusion once the second diffusivity experiment is complete. Current assessment: the shaker is likely sufficient for O₂ supply, but CO₂ accumulation warrants monitoring.',
         mediaLabel: null,
         mediaFile: 'images/o2_co2_usage.png', mediaType: 'image'
       },
@@ -836,8 +836,8 @@ const SECTIONS = {
     slides: [
       {
         tag: 'SimCell gas consumption',
-        heading: 'O₂ Consumption and CO₂ Production in Hydrogel',
-        text: 'SimCells consume O₂ and produce CO₂ at uniform volumetric rates across all biofilm nodes. These rates were estimated from literature (mammalian cell basal metabolic rates) and are applied as source/sink terms in the 2-D PDE. The dissolved O₂ and CO₂ profiles shown are steady-state outputs of the sensitivity sweep at the nominal operating RPM. Adequate O₂ supply to the hydrogel interior requires both sufficient bulk k<sub>L</sub> and high enough gel-phase diffusivity.',
+        heading: 'O₂ and CO₂ in the Hydrogel — Steady-State Assessment',
+        text: 'At steady state, the shaker supplies enough O₂ that dissolved oxygen does not run out across the hydrogel — the model predicts adequate oxygenation at the nominal operating RPM. CO₂ produced by the SimCells does, however, accumulate to elevated concentrations in the hydrogel interior. This matters because excess CO₂ shifts the carbonate equilibrium: more CO₂ means more H₂CO₃, lowering local pH. A lower pH shifts the NH₃/NH₄⁺ equilibrium toward NH₄⁺ (which cannot cross the membrane), reducing the free NH₃ available for arginine synthesis and therefore limiting arginine yield. Whether a stirrer is needed to improve CO₂ stripping depends on the effective gel-phase diffusivity D<sub>eff</sub> — high D<sub>eff</sub> allows CO₂ to escape laterally without forced convection. This conclusion will be revisited once the second diffusivity experiment is complete. Current working hypothesis: the shaker is sufficient for O₂ supply, but CO₂ accumulation and the resulting pH drop may be the primary constraint on arginine production.',
         mediaLabel: null,
         mediaFile: 'images/o2_co2_usage.png', mediaType: 'image'
       },
