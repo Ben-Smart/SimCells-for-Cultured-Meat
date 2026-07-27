@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SimCells Bioreactor — Interactive Model</title>
+<title>SimCells Bioreactor — Interactive Model (Talk 2)</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 
 body {
-  background:#0e1e38;
-  color:#e0e8ff;
+  background:#e8edf5;
+  color:#1e2d40;
   font-family:'Segoe UI',system-ui,sans-serif;
   min-height:100vh;
   overflow-x:hidden;
@@ -19,11 +19,13 @@ body {
 header {
   display:flex; align-items:center; justify-content:space-between;
   padding:14px 32px;
-  background:rgba(255,255,255,0.03);
-  border-bottom:1px solid rgba(255,255,255,0.07);
+  background:rgba(255,255,255,0.88);
+  backdrop-filter:blur(8px);
+  border-bottom:1px solid rgba(0,0,0,0.09);
+  box-shadow:0 1px 6px rgba(0,0,0,0.07);
 }
-.hdr-title { font-size:1.1rem; font-weight:600; color:#7dd3fc; letter-spacing:.3px; }
-.hdr-sub   { font-size:.8rem; color:#64748b; }
+.hdr-title { font-size:1.1rem; font-weight:600; color:#1e3a6e; letter-spacing:.3px; }
+.hdr-sub   { font-size:.8rem; color:#4b5563; }
 
 /* ─── Main view ─── */
 #main-view {
@@ -33,7 +35,7 @@ header {
 .reactor-wrap { position:relative; display:inline-block; }
 #reactor-svg {
   width:300px;
-  filter:drop-shadow(0 0 40px rgba(100,180,255,.12));
+  filter:drop-shadow(0 8px 28px rgba(0,0,0,.14));
 }
 
 /* pulse animation for hotspot dots */
@@ -49,7 +51,52 @@ header {
 
 .hint {
   margin-top:14px;
-  font-size:.78rem; color:#475569; letter-spacing:.4px;
+  font-size:.78rem; color:#6b7280; letter-spacing:.4px;
+}
+
+/* ─── Notebook to-do ─── */
+.notebook {
+  margin-top:28px;
+  display:flex;
+  width:310px;
+  border-radius:6px;
+  box-shadow:3px 4px 18px rgba(0,0,0,.35), inset 0 0 0 1px rgba(0,0,0,.12);
+  overflow:hidden;
+  transform:rotate(-1.2deg);
+}
+.nb-binding {
+  width:24px; flex-shrink:0;
+  background:repeating-linear-gradient(
+    180deg,
+    #b45309 0px, #b45309 7px,
+    #fefce8 7px, #fefce8 20px
+  );
+  border-right:2px solid #92400e;
+}
+.nb-inner {
+  flex:1;
+  padding:11px 13px 14px;
+  background:repeating-linear-gradient(
+    180deg,
+    #fefce8 0px, #fefce8 23px,
+    #bfdbfe 23px, #bfdbfe 24px
+  );
+}
+.nb-title {
+  font-size:.78rem; font-weight:700; color:#92400e;
+  margin-bottom:9px; padding-bottom:5px;
+  border-bottom:1.5px solid #fcd34d;
+  font-family:'Segoe UI',sans-serif;
+}
+.nb-items { list-style:none; padding:0; margin:0; }
+.nb-items li {
+  display:flex; align-items:flex-start; gap:7px;
+  font-size:.73rem; color:#1e293b; line-height:1.55;
+  padding:3px 0;
+  font-family:'Segoe UI',sans-serif;
+}
+.nb-items li::before {
+  content:'☐'; color:#78716c; flex-shrink:0; font-size:.8rem; margin-top:1px;
 }
 
 /* ─── Slide Panel ─── */
@@ -104,8 +151,39 @@ header {
   overflow:hidden;
 }
 .slide-media img, .slide-media video {
-  width:100%; max-height:340px; object-fit:contain; border-radius:10px;
+  width:100%; max-height:700px; object-fit:contain; border-radius:10px;
 }
+
+.eq-block {
+  margin-top:18px;
+  padding:14px 22px;
+  background:rgba(125,211,252,.06);
+  border:1px solid rgba(125,211,252,.22);
+  border-radius:10px;
+  color:#e2e8f0;
+  font-family:'Courier New',monospace;
+  font-size:.95rem;
+  line-height:2;
+}
+.eq-block .eq-main { font-size:1.05rem; text-align:center; letter-spacing:.04em; }
+.eq-block .eq-key  { font-size:.78rem; color:#7dd3fc; margin-top:6px; }
+
+.slide-list { margin-top:16px; padding:0; list-style:none; }
+.slide-list li {
+  display:flex; align-items:flex-start; gap:10px;
+  padding:9px 0; border-bottom:1px solid rgba(255,255,255,.05);
+  font-size:.88rem; color:#cbd5e1; line-height:1.55;
+}
+.slide-list li:last-child { border-bottom:none; }
+.slide-list li::before { content:'±0'; color:#7dd3fc; flex-shrink:0; font-size:.95rem; margin-top:1px; }
+
+/* notebook accordion */
+.notebook { cursor:pointer; transition:transform .18s, box-shadow .18s; }
+.notebook:hover { transform:rotate(-0.4deg) scale(1.03); box-shadow:5px 6px 24px rgba(0,0,0,.45), inset 0 0 0 1px rgba(0,0,0,.12); }
+.nb-items { max-height:0; overflow:hidden; transition:max-height .38s ease; margin:0; padding:0; }
+.notebook.open .nb-items { max-height:500px; }
+.nb-chevron { float:right; display:inline-block; transition:transform .3s; line-height:1; }
+.notebook.open .nb-chevron { transform:rotate(180deg); }
 
 .pnav {
   padding:14px 26px;
@@ -265,7 +343,7 @@ header {
       <!-- ── Grey container walls flanking the hydrogel ── -->
       <rect x="85"  y="266" width="17" height="112" fill="#253c57" stroke="#5a85aa" stroke-width="1"/>
       <rect x="198" y="266" width="17" height="112" fill="#253c57" stroke="#5a85aa" stroke-width="1"/>
-      <!-- Grey container bottom plate (below hydrogel) -->
+      <!-- Grey container bottom plate -->
       <rect x="85"  y="360" width="130" height="18" fill="#253c57" stroke="#5a85aa" stroke-width="1"/>
 
       <!-- ── Hydrogel (at stirrer height, inside container) ── -->
@@ -301,9 +379,6 @@ header {
       <!-- ══════════════════════════════════════
            INVISIBLE CLICKABLE HOTSPOT REGIONS
            ══════════════════════════════════════ -->
-      <!-- Gas phase / cap -->
-      <rect x="52" y="40"  width="196" height="184" fill="transparent"
-            class="hot" onclick="openPanel('gas')"/>
       <!-- Interface strip -->
       <rect x="52" y="210" width="196" height="24"  fill="transparent"
             class="hot" onclick="openPanel('interface')"/>
@@ -325,15 +400,30 @@ header {
       <rect x="102" y="272" width="96" height="88"  fill="transparent"
             class="hot" onclick="openHydrogelView()"/>
 
+      <!-- Liquid annular zones (upper portions, above stirrer) -->
+      <rect x="52"  y="222" width="36" height="36" fill="transparent"
+            class="hot" onclick="openPanel('liquid')"/>
+      <rect x="212" y="222" width="36" height="36" fill="transparent"
+            class="hot" onclick="openPanel('liquid')"/>
+      <!-- Liquid annular zones (lower portions, below stirrer) -->
+      <rect x="52"  y="362" width="36" height="138" fill="transparent"
+            class="hot" onclick="openPanel('liquid')"/>
+      <rect x="212" y="362" width="36" height="138" fill="transparent"
+            class="hot" onclick="openPanel('liquid')"/>
+      <!-- Liquid inside inner vessel (above hydrogel container) -->
+      <rect x="102" y="222" width="96" height="42" fill="transparent"
+            class="hot" onclick="openPanel('liquid')"/>
+      <!-- Liquid inside inner vessel (below hydrogel container) -->
+      <rect x="102" y="380" width="96" height="118" fill="transparent"
+            class="hot" onclick="openPanel('liquid')"/>
+
+      <!-- Shaker base plate -->
+      <rect x="36"  y="498" width="228" height="22" fill="transparent"
+            class="hot" onclick="openPanel('shaker')"/>
+
       <!-- ══════════════════════════════
            PULSE INDICATOR DOTS
            ══════════════════════════════ -->
-      <!-- Gas phase -->
-      <g onclick="openPanel('gas')" class="hot">
-        <circle cx="258" cy="78"  r="6" fill="#bae6fd"/>
-        <circle cx="258" cy="78"  r="6" fill="none" stroke="#bae6fd" stroke-width="1.5"
-                class="pulse-ring"/>
-      </g>
       <!-- Gas-liquid interface -->
       <g onclick="openPanel('interface')" class="hot">
         <circle cx="258" cy="222" r="6" fill="#93c5fd"/>
@@ -348,8 +438,8 @@ header {
       </g>
       <!-- Container -->
       <g onclick="openPanel('container')" class="hot">
-        <circle cx="258" cy="298" r="6" fill="#fbbf24"/>
-        <circle cx="258" cy="298" r="6" fill="none" stroke="#fbbf24" stroke-width="1.5"
+        <circle cx="93" cy="313" r="6" fill="#fbbf24"/>
+        <circle cx="93" cy="313" r="6" fill="none" stroke="#fbbf24" stroke-width="1.5"
                 class="pulse-ring" style="animation-delay:1.65s"/>
       </g>
       <!-- Hydrogel -->
@@ -358,36 +448,42 @@ header {
         <circle cx="150" cy="316" r="6" fill="none" stroke="#34d399" stroke-width="1.5"
                 class="pulse-ring" style="animation-delay:.8s"/>
       </g>
+      <!-- Liquid (left annular zone) -->
+      <g onclick="openPanel('liquid')" class="hot">
+        <circle cx="70" cy="450" r="6" fill="#38bdf8"/>
+        <circle cx="70" cy="450" r="6" fill="none" stroke="#38bdf8" stroke-width="1.5"
+                class="pulse-ring" style="animation-delay:0.3s"/>
+      </g>
+      <!-- Shaker (below base plate, left side) -->
+      <g onclick="openPanel('shaker')" class="hot">
+        <circle cx="25" cy="530" r="6" fill="#f97316"/>
+        <circle cx="25" cy="530" r="6" fill="none" stroke="#f97316" stroke-width="1.5"
+                class="pulse-ring" style="animation-delay:2.2s"/>
+      </g>
 
       <!-- ══════════════════════════════
            SECTION LABELS
            ══════════════════════════════ -->
-      <!-- Gas phase -->
-      <line x1="252" y1="73"  x2="238" y2="66"  stroke="#bae6fd" stroke-width=".8"
-            stroke-dasharray="3,2"/>
-      <text x="236" y="62" fill="#bae6fd" font-size="8"
-            font-family="Segoe UI,sans-serif" text-anchor="end">Gas phase</text>
-
       <!-- Interface -->
-      <line x1="252" y1="217" x2="238" y2="230" stroke="#93c5fd" stroke-width=".8"
+      <line x1="252" y1="217" x2="238" y2="230" stroke="#1d4ed8" stroke-width=".8"
             stroke-dasharray="3,2"/>
-      <text x="236" y="242" fill="#93c5fd" font-size="8"
+      <text x="236" y="242" fill="#1d4ed8" font-size="8"
             font-family="Segoe UI,sans-serif" text-anchor="end">Gas–liquid</text>
-      <text x="236" y="252" fill="#93c5fd" font-size="8"
+      <text x="236" y="252" fill="#1d4ed8" font-size="8"
             font-family="Segoe UI,sans-serif" text-anchor="end">interface</text>
 
       <!-- Stirrer -->
-      <line x1="20"  y1="302" x2="14"  y2="288" stroke="#c4b5fd" stroke-width=".8"
+      <line x1="25"  y1="302" x2="18"  y2="290" stroke="#6d28d9" stroke-width=".8"
             stroke-dasharray="3,2"/>
-      <text x="12"  y="283" fill="#c4b5fd" font-size="8"
-            font-family="Segoe UI,sans-serif" text-anchor="end">Stirrer</text>
+      <text x="4"   y="286" fill="#6d28d9" font-size="8"
+            font-family="Segoe UI,sans-serif" text-anchor="start">Stirrer</text>
 
       <!-- Container -->
-      <line x1="252" y1="293" x2="238" y2="280" stroke="#fbbf24" stroke-width=".8"
+      <line x1="87" y1="307" x2="73" y2="294" stroke="#fbbf24" stroke-width=".8"
             stroke-dasharray="3,2"/>
-      <text x="236" y="275" fill="#fbbf24" font-size="8"
+      <text x="71" y="290" fill="#fbbf24" font-size="8"
             font-family="Segoe UI,sans-serif" text-anchor="end">Hydrogel</text>
-      <text x="236" y="285" fill="#fbbf24" font-size="8"
+      <text x="71" y="300" fill="#fbbf24" font-size="8"
             font-family="Segoe UI,sans-serif" text-anchor="end">container</text>
 
       <!-- Hydrogel -->
@@ -395,30 +491,57 @@ header {
             stroke-dasharray="3,2"/>
       <text x="150" y="412" fill="#34d399" font-size="8"
             font-family="Segoe UI,sans-serif" text-anchor="middle">Hydrogel</text>
+
+      <!-- Liquid -->
+      <line x1="64" y1="446" x2="40" y2="436" stroke="#38bdf8" stroke-width=".8"
+            stroke-dasharray="3,2"/>
+      <text x="4" y="432" fill="#38bdf8" font-size="8"
+            font-family="Segoe UI,sans-serif" text-anchor="start">Liquid</text>
+
+      <!-- Shaker -->
+      <line x1="31" y1="526" x2="52" y2="520" stroke="#f97316" stroke-width=".8"
+            stroke-dasharray="3,2"/>
+      <text x="54" y="517" fill="#f97316" font-size="8"
+            font-family="Segoe UI,sans-serif" text-anchor="start">Shaker</text>
     </svg>
   </div>
   <p class="hint">Click on any highlighted section to explore the model</p>
+  <div class="notebook" id="notebook" onclick="toggleNotebook()" title="Click to expand">
+    <div class="nb-binding"></div>
+    <div class="nb-inner">
+      <div class="nb-title">&#x1F4DD;&nbsp; To do before next talk&nbsp;<span class="nb-chevron">&#x25BE;</span></div>
+      <ul class="nb-items">
+        <li>Finish salinity sensitivity sweep and add figures to shaker slides</li>
+        <li>Add k_L vs RPM figure for O₂ and CO₂ to shaker section</li>
+        <li>Add spent-medium Day 2 figure to liquid section</li>
+        <li>Show FRAP data and propose next diffusivity experiment</li>
+        <li>Fill in arginine pathway parameter fitting slide</li>
+        <li>Add 2-D concentration field figures to hydrogel section</li>
+        <li>Run temperature sensitivity analysis</li>
+      </ul>
+    </div>
+  </div>
 </div>
 
 <!-- ═══════ SLIDE PANEL ═══════ -->
 <div id="panel">
   <div class="ph">
     <span class="ph-title" id="ph-title">Section</span>
-    <button class="ph-close" onclick="closePanel()">✕</button>
+    <button class="ph-close" onclick="closePanel()">&#x2715;</button>
   </div>
   <div class="slide-area" id="slide-area"></div>
   <div class="pnav">
-    <button class="pnav-btn" id="prev-btn" onclick="changeSlide(-1)">← Prev</button>
+    <button class="pnav-btn" id="prev-btn" onclick="changeSlide(-1)">&larr; Prev</button>
     <span class="pnav-ctr" id="slide-ctr"></span>
-    <button class="pnav-btn" id="next-btn" onclick="changeSlide(1)">Next →</button>
+    <button class="pnav-btn" id="next-btn" onclick="changeSlide(1)">Next &rarr;</button>
   </div>
 </div>
 
 <!-- ═══════ HYDROGEL DETAIL VIEW ═══════ -->
 <div id="hv">
   <div class="hv-hdr">
-    <button class="hv-back" onclick="closeHydrogelView()">← Back to bioreactor</button>
-    <span class="hv-title">Hydrogel — Species Transport &amp; Cell Model</span>
+    <button class="hv-back" onclick="closeHydrogelView()">&larr; Back to bioreactor</button>
+    <span class="hv-title">Hydrogel &mdash; Species Transport &amp; Cell Model</span>
     <span class="hv-hint">Click a species or the cells to explore the model</span>
   </div>
   <div class="hv-body">
@@ -450,7 +573,7 @@ header {
             stroke="#7dd3fc" stroke-width="1" stroke-dasharray="5,3" opacity=".32"/>
       <text x="330" y="17" fill="#7dd3fc" font-size="9.5"
             font-family="Segoe UI,sans-serif" text-anchor="middle" opacity=".65">
-        — Liquid medium interface —
+        &mdash; Liquid medium interface &mdash;
       </text>
 
       <!-- ── Cells ── -->
@@ -477,86 +600,86 @@ header {
       </g>
 
       <!-- ── CO₂ particles ── -->
-      <g class="hot" onclick="openPanel('co2-hydrogel')"
+      <g class="hot" onclick="openPanel('molecule', 2)"
          style="animation:d1 4s ease-in-out infinite">
         <circle cx="62"  cy="82"  r="15" fill="#ef4444" opacity=".9" filter="url(#glo)"/>
         <text x="62" y="86" fill="white" font-size="8.5" font-weight="bold"
-              font-family="Segoe UI,sans-serif" text-anchor="middle">CO₂</text>
+              font-family="Segoe UI,sans-serif" text-anchor="middle">CO&#x2082;</text>
       </g>
-      <g class="hot" onclick="openPanel('co2-hydrogel')"
+      <g class="hot" onclick="openPanel('molecule', 2)"
          style="animation:d2 5.2s ease-in-out infinite">
         <circle cx="248" cy="112" r="15" fill="#ef4444" opacity=".9" filter="url(#glo)"/>
         <text x="248" y="116" fill="white" font-size="8.5" font-weight="bold"
-              font-family="Segoe UI,sans-serif" text-anchor="middle">CO₂</text>
+              font-family="Segoe UI,sans-serif" text-anchor="middle">CO&#x2082;</text>
       </g>
-      <g class="hot" onclick="openPanel('co2-hydrogel')"
+      <g class="hot" onclick="openPanel('molecule', 2)"
          style="animation:d3 3.8s ease-in-out infinite">
         <circle cx="425" cy="308" r="15" fill="#ef4444" opacity=".9" filter="url(#glo)"/>
         <text x="425" y="312" fill="white" font-size="8.5" font-weight="bold"
-              font-family="Segoe UI,sans-serif" text-anchor="middle">CO₂</text>
+              font-family="Segoe UI,sans-serif" text-anchor="middle">CO&#x2082;</text>
       </g>
 
       <!-- ── O₂ particles ── -->
-      <g class="hot" onclick="openPanel('o2-hydrogel')"
+      <g class="hot" onclick="openPanel('molecule', 2)"
          style="animation:d2 4.6s ease-in-out infinite">
         <circle cx="118" cy="295" r="15" fill="#3b82f6" opacity=".9" filter="url(#glo)"/>
         <text x="118" y="299" fill="white" font-size="8.5" font-weight="bold"
-              font-family="Segoe UI,sans-serif" text-anchor="middle">O₂</text>
+              font-family="Segoe UI,sans-serif" text-anchor="middle">O&#x2082;</text>
       </g>
-      <g class="hot" onclick="openPanel('o2-hydrogel')"
+      <g class="hot" onclick="openPanel('molecule', 2)"
          style="animation:d1 3.5s ease-in-out infinite">
         <circle cx="435" cy="68"  r="15" fill="#3b82f6" opacity=".9" filter="url(#glo)"/>
         <text x="435" y="72" fill="white" font-size="8.5" font-weight="bold"
-              font-family="Segoe UI,sans-serif" text-anchor="middle">O₂</text>
+              font-family="Segoe UI,sans-serif" text-anchor="middle">O&#x2082;</text>
       </g>
-      <g class="hot" onclick="openPanel('o2-hydrogel')"
+      <g class="hot" onclick="openPanel('molecule', 2)"
          style="animation:d3 5.5s ease-in-out infinite">
         <circle cx="570" cy="282" r="15" fill="#3b82f6" opacity=".9" filter="url(#glo)"/>
         <text x="570" y="286" fill="white" font-size="8.5" font-weight="bold"
-              font-family="Segoe UI,sans-serif" text-anchor="middle">O₂</text>
+              font-family="Segoe UI,sans-serif" text-anchor="middle">O&#x2082;</text>
       </g>
 
       <!-- ── NH₃ particles ── -->
-      <g class="hot" onclick="openPanel('nh3-hydrogel')"
+      <g class="hot" onclick="openPanel('molecule', 1)"
          style="animation:d3 4.4s ease-in-out infinite">
         <circle cx="288" cy="52"  r="15" fill="#f59e0b" opacity=".9" filter="url(#glo)"/>
         <text x="288" y="56" fill="white" font-size="8.5" font-weight="bold"
-              font-family="Segoe UI,sans-serif" text-anchor="middle">NH₃</text>
+              font-family="Segoe UI,sans-serif" text-anchor="middle">NH&#x2083;</text>
       </g>
-      <g class="hot" onclick="openPanel('nh3-hydrogel')"
+      <g class="hot" onclick="openPanel('molecule', 1)"
          style="animation:d1 5.8s ease-in-out infinite">
         <circle cx="528" cy="320" r="15" fill="#f59e0b" opacity=".9" filter="url(#glo)"/>
         <text x="528" y="324" fill="white" font-size="8.5" font-weight="bold"
-              font-family="Segoe UI,sans-serif" text-anchor="middle">NH₃</text>
+              font-family="Segoe UI,sans-serif" text-anchor="middle">NH&#x2083;</text>
       </g>
 
       <!-- ── Lac⁻ particles ── -->
-      <g class="hot" onclick="openPanel('lac-hydrogel')"
+      <g class="hot" onclick="openPanel('molecule')"
          style="animation:d2 3.3s ease-in-out infinite">
         <circle cx="592" cy="108" r="15" fill="#a855f7" opacity=".9" filter="url(#glo)"/>
         <text x="592" y="112" fill="white" font-size="7.5" font-weight="bold"
-              font-family="Segoe UI,sans-serif" text-anchor="middle">Lac⁻</text>
+              font-family="Segoe UI,sans-serif" text-anchor="middle">Lac&#x207B;</text>
       </g>
-      <g class="hot" onclick="openPanel('lac-hydrogel')"
+      <g class="hot" onclick="openPanel('molecule')"
          style="animation:d3 5s ease-in-out infinite">
         <circle cx="218" cy="322" r="15" fill="#a855f7" opacity=".9" filter="url(#glo)"/>
         <text x="218" y="326" fill="white" font-size="7.5" font-weight="bold"
-              font-family="Segoe UI,sans-serif" text-anchor="middle">Lac⁻</text>
+              font-family="Segoe UI,sans-serif" text-anchor="middle">Lac&#x207B;</text>
       </g>
     </svg>
 
     <!-- Species legend -->
     <div class="hv-legend">
-      <div class="leg" onclick="openPanel('co2-hydrogel')">
-        <div class="leg-dot" style="background:#ef4444"></div>CO₂ model
+      <div class="leg" onclick="openPanel('molecule', 2)">
+        <div class="leg-dot" style="background:#ef4444"></div>CO&#x2082; model
       </div>
-      <div class="leg" onclick="openPanel('o2-hydrogel')">
-        <div class="leg-dot" style="background:#3b82f6"></div>O₂ model
+      <div class="leg" onclick="openPanel('molecule', 2)">
+        <div class="leg-dot" style="background:#3b82f6"></div>O&#x2082; model
       </div>
-      <div class="leg" onclick="openPanel('nh3-hydrogel')">
-        <div class="leg-dot" style="background:#f59e0b"></div>NH₃ / NH₄⁺ model
+      <div class="leg" onclick="openPanel('molecule', 1)">
+        <div class="leg-dot" style="background:#f59e0b"></div>NH&#x2083; / NH&#x2084;&#x207A; model
       </div>
-      <div class="leg" onclick="openPanel('lac-hydrogel')">
+      <div class="leg" onclick="openPanel('molecule')">
         <div class="leg-dot" style="background:#a855f7"></div>Lactate model
       </div>
       <div class="leg" onclick="openPanel('cells')">
@@ -569,11 +692,25 @@ header {
 <script>
 // ──────────────────────────────────────────────────────────────────
 // SLIDE CONTENT
-// To swap in a real MATLAB image: set  mediaFile: 'images/name.png'
-// To use a video:                 set  mediaFile: 'images/name.mp4',
-//                                      mediaType: 'video'
+// To swap in a real image: set  mediaFile: 'images/name.png'
+// To use a video:          set  mediaFile: 'images/name.mp4', mediaType: 'video'
 // ──────────────────────────────────────────────────────────────────
 const SECTIONS = {
+
+  intro: {
+    title: '2-D Bioreactor Simulation',
+    slides: [
+      {
+        tag: '2-D species model',
+        heading: 'Full 2-D Bioreactor Simulation',
+        text: 'All four dissolved species — O₂, CO₂, NH₃ and lactate — are now modelled on a 2-D finite-element mesh spanning the full bioreactor cross-section. The simulation captures three key physical processes: stirrer-driven convective mixing in the bulk liquid; the hydrogel container geometry and the boundary conditions it imposes; and species-specific diffusivities in both the liquid phase and the hydrogel interior. Press play to see the animated concentration field evolve over time.',
+        mediaFile: 'images/bioreactor_species_animation_normal.mp4',
+        mediaType: 'video',
+        equation: 'D<sub>eff</sub> = D<sub>L</sub> × exp(− d<sub>s</sub> / d<sub>pore</sub>)',
+        eqKey: 'D<sub>eff</sub> = effective diffusivity in hydrogel &nbsp;·&nbsp; D<sub>L</sub> = liquid-phase diffusivity &nbsp;·&nbsp; d<sub>s</sub> = solute diameter &nbsp;·&nbsp; d<sub>pore</sub> = hydrogel pore size &nbsp;·&nbsp; <em>initial approximation — pore size now measured</em>'
+      }
+    ]
+  },
 
   gas: {
     title: 'Gas Phase',
@@ -581,7 +718,7 @@ const SECTIONS = {
       {
         tag: 'Boundary condition',
         heading: 'Gas Phase Composition',
-        text: 'The gas phase above the liquid supplies CO₂ and O₂ to the medium. Atmospheric CO₂ is set at 429 ppm and O₂ at 20.95 mol%. These partial pressures set the interfacial dissolved concentrations that drive mass transfer into solution.',
+        text: 'The gas phase above the liquid supplies CO₂ and O₂ to the medium. Atmospheric CO₂ is set at 429 ppm and O₂ at 20.95 mol%. These partial pressures set the interfacial dissolved concentrations that drive mass transfer into solution.',
         mediaLabel: '[ MATLAB plot: CO₂ and O₂ partial pressures ]',
         mediaFile: null, mediaType: 'image'
       },
@@ -589,13 +726,13 @@ const SECTIONS = {
         tag: 'Weiss (1974)',
         heading: 'Henry’s Law — CO₂ Solubility',
         text: 'The dissolved CO₂ concentration at the gas–liquid interface is given by Henry’s law: [CO₂]* = K₀ · pCO₂. The solubility constant K₀ is a function of temperature and salinity, following Weiss (1974), Deep-Sea Res. 21:847–859.',
-        mediaLabel: '[ MATLAB plot: K₀ vs temperature at S = 35 ppt ]',
+        mediaLabel: '[ MATLAB plot: K₀ vs temperature at S = 35 ppt ]',
         mediaFile: null, mediaType: 'image'
       },
       {
         tag: 'Weiss (1970)',
         heading: 'Henry’s Law — O₂ Solubility',
-        text: 'Dissolved O₂ at saturation is computed via Weiss (1970), Deep-Sea Res. 17:721–735. At 25 °C and S = 35 ppt, the equilibrium O₂ concentration is approximately 0.22 mol m⁻³. Solubility decreases with both temperature and salinity (salting-out effect).',
+        text: 'Dissolved O₂ at saturation is computed via Weiss (1970), Deep-Sea Res. 17:721–735. At 25 °C and S = 35 ppt, the equilibrium O₂ concentration is approximately 0.22 mol m⁻³. Solubility decreases with both temperature and salinity (salting-out effect).',
         mediaLabel: '[ MATLAB plot: [O₂]* vs temperature and salinity ]',
         mediaFile: null, mediaType: 'image'
       }
@@ -606,31 +743,75 @@ const SECTIONS = {
     title: 'Gas–Liquid Interface & Mass Transfer',
     slides: [
       {
-        tag: 'Two-film theory',
-        heading: 'Gas-Phase Mass Transfer',
-        text: 'CO₂ and O₂ exchange across the gas–liquid interface is modelled with two-film theory. The molar flux is J = kₗ (C* − Cₜᵤᵬᵏ), where C* is the Henry’s law interfacial concentration and kₗ is the liquid-phase mass transfer coefficient [m s⁻¹]. Only neutral species (CO₂, O₂) exchange across the interface — ionic species (HCO₃⁻, CO₃²⁻, OH⁻, H⁺) do not.',
-        mediaLabel: '[ MATLAB plot: CO₂ and O₂ flux J vs time ]',
+        tag: 'Gas-liquid chemistry',
+        heading: 'CO₂ / O₂ Transfer and pH Equilibria',
+        text: 'CO₂ and O₂ dissolve across the gas–liquid interface following Henry’s Law. In the liquid phase CO₂ undergoes the full carbonate equilibrium (CO₂(aq) ⇌ H₂CO₃ ⇌ HCO₃⁻ + H⁺ ⇌ CO₃²⁻ + H⁺), while O₂ is consumed by cellular respiration. Lactic acid and ammonia also contribute to the proton balance, so the local pH is set by gas transfer, lactate production, and NH₄⁺ speciation together.',
+        mediaFile: 'images/chem_diagram.svg', mediaType: 'image'
+      },
+      {
+        tag: 'Mass transfer coefficient',
+        heading: 'Gas–Liquid k<sub>L</sub> at the Interface',
+        text: 'Transfer across the free surface is governed by the Büchs orbital-shaker correlation. At higher RPM the liquid film thins, increasing the mass-transfer coefficient for both O₂ and CO₂. The k<sub>L</sub> values computed for O₂ and CO₂ differ because of their different liquid-phase diffusivities (D<sub>CO₂</sub> ≈ 1.91×10⁻⁹ m² s⁻¹; D<sub>O₂</sub> ≈ 2.10×10⁻⁹ m² s⁻¹ at 37 °C).',
+        equation: 'k<sub>L</sub> = 1.06×10<sup>−3</sup> · d<sup>4.3</sup> · ω<sup>2.12</sup> · V<sub>L</sub><sup>−1.2</sup> · ν<sup>−0.21</sup> · D<sub>L</sub><sup>0.12</sup> · g<sup>0.51</sup>',
+        eqKey: 'Same correlation as shaker plate · D<sub>L</sub> differs per species',
+        mediaLabel: '[ Figure: k<sub>L</sub>(O₂) and k<sub>L</sub>(CO₂) vs RPM ]',
+        mediaFile: null, mediaType: 'image'
+      }
+    ]
+  },
+
+  shaker: {
+    title: 'Shaker Plate — Gas Transfer',
+    slides: [
+      {
+        tag: 'Mass transfer coefficient',
+        heading: 'k<sub>L</sub> for Orbital Shaker Plate',
+        text: 'Gas–liquid mass transfer driven by the orbital shaker is described by the Büchs correlation. The volumetric mass-transfer coefficient k<sub>L</sub> scales strongly with angular velocity (ω²·¹²) and inversely with liquid volume, capturing the thinning of the liquid film at higher shaking speeds.',
+        equation: 'k<sub>L</sub> = 1.06×10<sup>−3</sup> · d<sup>4.3</sup> · ω<sup>2.12</sup> · V<sub>L</sub><sup>−1.2</sup> · ν<sup>−0.21</sup> · D<sub>L</sub><sup>0.12</sup> · g<sup>0.51</sup>',
+        eqKey: 'd = orbital diameter [m] · ω = angular velocity [rad s<sup>−1</sup>] · V<sub>L</sub> = liquid volume [m³] · ν = kinematic viscosity [m² s<sup>−1</sup>] · D<sub>L</sub> = diffusivity [m² s<sup>−1</sup>] · g = 9.81 m s<sup>−2</sup>',
+        mediaLabel: '[ Figure: k<sub>L</sub> vs RPM for O₂ and CO₂ ]',
         mediaFile: null, mediaType: 'image'
       },
       {
-        tag: 'Empirical correlation',
-        heading: 'Mass Transfer Coefficient kₗ',
-        text: 'kₗ is computed from the mixing velocity v and liquid depth d. Species-specific kₗ values are scaled from the CO₂ reference by the square-root of diffusivity: kₗ,i = kₗ,CO₂ · √(Dᵢ/D₀).',
-        mediaLabel: '[ MATLAB plot: kₗ vs mixing velocity v ]',
+        tag: 'SimCell gas demand',
+        heading: 'O₂ Consumption and CO₂ Production by SimCells',
+        text: 'SimCells consume O₂ and produce CO₂ at rates q<sub>O₂</sub> and q<sub>CO₂</sub> [mol m⁻³ s⁻¹], applied uniformly across all biofilm nodes. These rates set the minimum gas-transfer flux that the shaker must supply. Comparing the cellular demand against the shaker-driven supply determines whether orbital mixing alone is sufficient to prevent O₂ depletion or CO₂ accumulation.',
+        mediaLabel: '[ Figure: O₂ and CO₂ steady-state concentrations vs RPM from SimCell_sensitivity.m ]',
         mediaFile: null, mediaType: 'image'
       },
       {
-        tag: 'Zeebe (2011) · Ferrell & Himmelblau (1967)',
-        heading: 'Diffusivities in Seawater',
-        text: 'CO₂ diffusivity follows the power-law of Zeebe (2011), scaled for salinity via the dynamic viscosity of seawater (Sharqawy 2010). O₂ uses a Stokes–Einstein correction from Dₜᵉᶠ = 2.10 × 10⁻⁹ m² s⁻¹ at 25 °C (Ferrell & Himmelblau 1967).',
-        mediaLabel: '[ MATLAB plot: Dₙₒ₂ and Dₒ₂ vs temperature ]',
+        tag: 'Sufficiency analysis',
+        heading: 'Is the Shaker Alone Sufficient?',
+        text: 'At the operating RPM, the shaker-driven k<sub>L</sub> must sustain dissolved O₂ above the cellular K<sub>m</sub> and keep pCO₂ within a physiological range (< 80 mmHg). The sensitivity sweep shows steady-state [O₂] and free CO₂ as a function of RPM. Below a critical RPM, O₂ supply cannot match demand and the hydrogel becomes hypoxic. Above it, the shaker alone is adequate without additional gas sparging.',
+        mediaLabel: '[ Figure: sensitivity result — sufficiency threshold ]',
         mediaFile: null, mediaType: 'image'
+      }
+    ]
+  },
+
+  liquid: {
+    title: 'Liquid Segment — Media & pH',
+    slides: [
+      {
+        tag: 'Media composition & pH model',
+        heading: 'Initial Medium and pH Buffering',
+        text: 'The liquid node tracks six dissolved species: lactate, NH₄⁺, O₂, total inorganic carbon (TC = CO₂ + HCO₃⁻ + CO₃²⁻), total alkalinity (TA), and arginine. Medium perfusion at flow rate Q continuously replenishes fresh DMEM/F-12 (HEPES-free). Local pH is not a state variable but is computed at each time step by solving the charge balance for the bicarbonate–phosphate–ammonia–lactate buffer system. The solver (Newton–Raphson on TA) returns [H⁺] and all derived carbonate and ammonium species.',
+        equation: 'TA = [HCO₃⁻] + 2[CO₃²⁻] + [NH₃] + [Lac⁻] + [HPO₄²⁻] + [OH⁻] − [H⁺]',
+        eqKey: 'Solved iteratively at each outer time step · pH = −log₁₀([H⁺]/1000)',
+        mediaFile: null, mediaType: 'image', mediaLabel: null
       },
       {
-        tag: 'ODE solution',
-        heading: '[CO₂] and [O₂] Dynamics',
-        text: 'The ODE solution tracks total inorganic carbon (TC) and dissolved O₂ as they evolve from initial values toward atmospheric equilibrium. Carbonate speciation (CO₂, HCO₃⁻, CO₃²⁻) and pH are recomputed algebraically at each timestep via a Newton–Raphson [H⁺] solver.',
-        mediaLabel: '[ MATLAB plot: [CO₂], [O₂], pH vs time ]',
+        tag: 'Measured media data',
+        heading: 'Media Composition — Day 2 Baseline',
+        text: 'Measured ion concentrations and pCO₂ from spent-medium experiments (202606_mammalian cell spent medium.csv) were used to set the initial conditions and inlet boundary concentrations. Day 2 data were chosen as the model start point because they reflect the real culture state at the beginning of the modelled experimental window: Na⁺ = 147.6 mM, K⁺ = 4.16 mM, Ca²⁺ = 0.765 mM, NH₄⁺ = 1.18 mM, Lac = 0.035 mM, pH = 7.745, pCO₂ = 4.30 mmHg, S = 9.40 PSU. Day 0 values were not used because the cells had already been cultured for two days before the experiment started.',
+        mediaLabel: null,
+        mediaFile: 'images/Media_consentrations_day2.png', mediaType: 'image'
+      },
+      {
+        tag: 'Diffusivity measurements',
+        heading: 'Molecular Diffusivities — Current Data and Next Steps',
+        text: 'Species-specific diffusivities in both the liquid phase and hydrogel are required for the 2-D model. Current values are taken from literature (liquid phase at 37 °C): D<sub>O₂</sub> = 2.10×10⁻⁹, D<sub>CO₂</sub> = 1.91×10⁻⁹, D<sub>lac</sub> = 1.08×10⁻⁹, D<sub>NH₄</sub> = 1.96×10⁻⁹, D<sub>arg</sub> = 0.68×10⁻⁹ m² s⁻¹. The previous FRAP experiment to measure hydrogel diffusivities did not yield reliable results [show data]. The next proposed experiment is [describe next experiment here].',
+        mediaLabel: '[ Figure: FRAP data from previous experiment — why it did not work ]',
         mediaFile: null, mediaType: 'image'
       }
     ]
@@ -642,16 +823,11 @@ const SECTIONS = {
       {
         tag: 'Bioreactor design',
         heading: 'Stirrer Geometry',
-        text: 'Stirrer blades are located in the annular space between the inner and outer vessels. The blade radius is 26.37 mm. Mixing velocity used in the kₗ correlation is v = π × r × N, where N is the rotation frequency [s⁻¹]. At 3 rev s⁻¹, v ≈ 0.249 m s⁻¹.',
-        mediaLabel: '[ Engineering drawing: stirrer dimensions ]',
-        mediaFile: null, mediaType: 'image'
-      },
-      {
-        tag: 'Mass transfer',
-        heading: 'Effect of Mixing on kₗ',
-        text: 'kₗ scales as a power-law with mixing velocity. Increasing the rotation speed directly controls gas transfer rates for both O₂ and CO₂, and is the primary operational parameter for maintaining dissolved gas concentrations at target values.',
-        mediaLabel: '[ MATLAB plot: kₗ,O₂ and kₗ,CO₂ vs rotation speed ]',
-        mediaFile: null, mediaType: 'image'
+        text: 'Stirrer blades are located in the annular space between the inner and outer vessels. The blade radius is 26.37 mm. Mixing velocity used in the kₗ correlation is v = π × r × N, where N is the rotation frequency [s⁻¹]. At 3 rev s⁻¹, v ≈ 0.249 m s⁻¹. Rotation of the hydrogel itself does not appear to significantly affect molecular diffusion within it — the 1-D model shows negligible change in species profiles. This effect still needs to be incorporated into the 2-D model. The propeller blades are designed primarily to promote gas exchange at the liquid surface and throughout the bulk medium. At this stage they do not appear to be required for transport within the hydrogel itself. The setric-style impellers additionally prevent molecules from settling on the base of the reactor, maintaining a well-mixed liquid phase in the annular space surrounding the hydrogel container.',
+        mediaFile: 'images/rotation_effect.png', mediaType: 'image',
+        mediaLabel: null,
+        equation: 'K<sub>L</sub> = 0.62 × <span style="font-size:1.15em">√</span><span style="text-decoration:overline; padding:0 5px">ω / ν</span> × (ν / D<sub>L</sub>)<sup>1/3</sup>',
+        eqKey: 'ω = angular velocity [rad s<sup>−1</sup>] · ν = kinematic viscosity [m² s<sup>−1</sup>] · D<sub>L</sub> = liquid-phase diffusivity [m² s<sup>−1</sup>]'
       }
     ]
   },
@@ -660,97 +836,67 @@ const SECTIONS = {
     title: 'Hydrogel Container',
     slides: [
       {
-        tag: 'Bioreactor design',
-        heading: 'Container Geometry',
-        text: 'The inner cylindrical vessel (hydrogel container) has an internal depth of 114.44 mm. Its wall separates the well-mixed liquid medium (annular space) from the diffusion-limited hydrogel interior. Container dimensions set by the engineering drawing (Choreno Machain, 28/05/2026).',
-        mediaLabel: '[ Engineering drawing: container cross-section ]',
-        mediaFile: null, mediaType: 'image'
+        tag: 'Pore area fraction',
+        heading: 'Diffusive Area Through the Container Walls',
+        text: 'Molecules cannot diffuse through the plastic walls of the hydrogel container — only through the pores. The effective diffusive area across each wall is therefore modelled as a fraction of the total boundary area, scaled by the proportion of the surface occupied by pores. This pore area fraction is A₀ = 0.503, meaning roughly half the wall area is open to diffusion. This parameter directly scales the flux of O₂, CO₂, NH₃ and lactate between the bulk liquid and the hydrogel interior through the side walls.',
+        mediaFile: 'images/bioreactor_species_animation_normal.mp4', mediaType: 'video',
+        mediaLabel: null
       },
       {
-        tag: 'Modelling',
-        heading: 'Boundary Conditions',
-        text: 'The outer surface of the hydrogel is in contact with the bulk liquid medium. Species concentrations at this boundary are supplied by the bulk ODE solution (TC, TN, TL, O₂) and applied as Dirichlet boundary conditions to the radial diffusion–reaction model inside the hydrogel.',
-        mediaLabel: '[ MATLAB diagram: bulk ↔ hydrogel BC schematic ]',
-        mediaFile: null, mediaType: 'image'
+        tag: 'Solid-wall comparison',
+        heading: 'Effect of Solid Walls — Top-Surface Diffusion Only',
+        text: 'If the container walls were solid (A₀ = 0), molecules could only enter the hydrogel from the open top surface. The video shows a simulation run with fully solid walls: the concentration gradient is steep at the top face and species struggle to penetrate the full depth of the hydrogel. Porous side walls are therefore essential for adequate nutrient and gas supply to cells throughout the hydrogel volume.',
+        mediaFile: 'images/bioreactor_species_animation_walls.mp4', mediaType: 'video'
       }
     ]
   },
 
-  'co2-hydrogel': {
-    title: 'CO₂ Transport in Hydrogel',
+  molecule: {
+    title: 'Species Transport in Hydrogel',
     slides: [
       {
-        tag: 'Fick’s second law',
-        heading: 'CO₂ Diffusion Profile',
-        text: 'CO₂ diffuses radially inward from the container wall following Fick’s second law in cylindrical co-ordinates. The effective diffusivity in the hydrogel matrix is reduced relative to free solution by the tortuosity factor.',
-        mediaLabel: '[ MATLAB plot: [CO₂] radial profile at different times ]',
+        tag: '1-D bioreactor model',
+        heading: 'Molecular Transport — Current Model',
+        text: 'The 1-D ODE model tracks dissolved species concentrations across the bioreactor and hydrogel. Lactic acid and ammonia are consumed within the hydrogel by the SimCells and can still reach a stable steady-state in the bulk medium. The model currently needs extending for O₂ and CO₂: these species require additional reaction terms to capture cellular consumption (O₂) and production (CO₂) inside the hydrogel. The plot below shows an example of lactate being consumed by SimCells while the bulk concentration reaches a steady state — demonstrating that cellular uptake and gas transfer can be balanced in this bioreactor system.',
+        mediaFile: 'images/1d_reactor.png', mediaType: 'image',
+        mediaFile2: 'images/lac_simcell.png',
+        mediaLabel2: null
+      },
+      {
+        tag: 'pH & ammonia transport',
+        heading: 'pH Controls NH₃ Availability for Arginine Synthesis',
+        text: 'The pH of the local environment around the SimCells critically affects arginine production. NH₃ — the neutral, uncharged form of ammonium — crosses cell membranes freely and is the nitrogen source for arginine synthesis via the gdhA pathway. NH₄⁺ transport into the cell is very low. Because the NH₃/NH₄⁺ equilibrium is strongly pH-dependent (pKₐ ≈ 9.25), a drop in local pH shifts speciation towards NH₄⁺, drastically reducing available NH₃ and limiting arginine yield. This means that adequate gas transfer (maintaining CO₂ and O₂ balance) is essential to keep the local pH high enough for efficient NH₃ uptake and arginine synthesis.',
+        mediaFile: 'images/ph_effect.png', mediaType: 'image',
+        mediaFile2: 'images/Ammonia_pH.png',
+        mediaLabel2: null,
+        mediaLabel: null
+      },
+      {
+        tag: 'SimCell gas consumption',
+        heading: 'O₂ Consumption and CO₂ Production in Hydrogel',
+        text: 'SimCells consume O₂ and produce CO₂ at uniform volumetric rates across all biofilm nodes. These rates were estimated from literature (mammalian cell basal metabolic rates) and are applied as source/sink terms in the 2-D PDE. The dissolved O₂ and CO₂ profiles shown are steady-state outputs of the sensitivity sweep at the nominal operating RPM. Adequate O₂ supply to the hydrogel interior requires both sufficient bulk k<sub>L</sub> and high enough gel-phase diffusivity.',
+        mediaLabel: '[ Figure: 2-D O₂ and CO₂ concentration fields ]',
         mediaFile: null, mediaType: 'image'
       },
       {
-        tag: 'Millero (1994)',
-        heading: 'Carbonate Equilibrium',
-        text: 'CO₂ is in rapid equilibrium with HCO₃⁻ and CO₃²⁻ throughout the hydrogel. DIC speciation is recomputed at each radial grid point from the local total inorganic carbon (TC) and H⁺ concentration, using the temperature- and salinity-dependent K₁ and K₂ of Millero (1994).',
-        mediaLabel: '[ MATLAB plot: CO₂, HCO₃⁻, CO₃²⁻ vs radial position ]',
-        mediaFile: null, mediaType: 'image'
-      }
-    ]
-  },
-
-  'o2-hydrogel': {
-    title: 'O₂ Transport in Hydrogel',
-    slides: [
-      {
-        tag: 'Diffusion–reaction',
-        heading: 'O₂ Diffusion & Consumption',
-        text: 'O₂ diffuses inward from the hydrogel boundary and is consumed by cells via aerobic respiration. The steady-state radial profile reflects the balance between diffusion flux and Michaelis–Menten cellular uptake. The effective diffusivity follows a Stokes–Einstein correction (Ferrell & Himmelblau 1967).',
-        mediaLabel: '[ MATLAB plot: [O₂] radial profile at various cell densities ]',
+        tag: 'pH effect on SimCells',
+        heading: 'Effect of pH on Arginine Production',
+        text: 'Local pH inside the hydrogel influences arginine yield through two mechanisms: (1) NH₃/NH₄⁺ speciation — at lower pH more NH₃ converts to NH₄⁺ which cannot cross the membrane, starving the gdhA pathway; (2) enzyme activity — argJ and gdhA show reduced V<sub>max</sub> below pH 7.0. The model captures both effects through the solve_H_buf step and the speciation fraction applied to NH₃ transport.',
+        mediaLabel: '[ Figure: arginine yield vs local pH ]',
         mediaFile: null, mediaType: 'image'
       },
       {
-        tag: 'Critical design parameter',
-        heading: 'O₂ Limitation at the Centre',
-        text: 'Anoxia at the hydrogel centre is the primary viability risk in thick hydrogel constructs for cultured meat. The minimum central [O₂] depends on the hydrogel radius, cell density, and the bulk O₂ maintained by the stirrer system.',
-        mediaLabel: '[ MATLAB plot: central [O₂] vs hydrogel radius ]',
-        mediaFile: null, mediaType: 'image'
-      }
-    ]
-  },
-
-  'nh3-hydrogel': {
-    title: 'NH₃ / NH₄⁺ in Hydrogel',
-    slides: [
-      {
-        tag: 'Khoo et al. (1977)',
-        heading: 'Ammonia Speciation',
-        text: 'Cells excrete ammonium as a metabolic waste product. Within the hydrogel, total ammonium (TN) partitions between NH₃ and NH₄⁺ according to the temperature- and salinity-dependent pKₐ from Khoo, Culberson & Bates (1977), J. Solution Chem. 6(4):281–290. The pKₐ is given by A/T + B + C·T with constants selected for the nearest tabulated salinity.',
-        mediaLabel: '[ MATLAB plot: [NH₃], [NH₄⁺] radial profile ]',
-        mediaFile: null, mediaType: 'image'
+        tag: 'Salinity sensitivity',
+        heading: 'Effect of Salinity on Gas Solubility',
+        text: 'Higher ionic strength reduces O₂ and CO₂ solubility (salting-out effect), lowering equilibrium concentrations at the gas–liquid interface. The sensitivity sweep (0.01 – 100 PSU) shows that dissolved O₂ and free CO₂ decrease monotonically with salinity. Physiological media (S ≈ 9–10 PSU) sits in a region where this effect is modest but non-negligible relative to cellular demand.',
+        mediaLabel: null,
+        mediaFile: 'images/Salinity_changes_new.png', mediaType: 'image'
       },
       {
-        tag: 'Cell viability',
-        heading: 'Ammonia Toxicity',
-        text: 'NH₃ (the neutral, membrane-permeable form) is toxic to cells at elevated concentrations. Its local concentration depends on both total ammonium and local pH — acidic conditions shift speciation towards NH₄⁺, reducing free ammonia and toxicity.',
-        mediaLabel: '[ MATLAB plot: [NH₃] vs pH at 25 °C and 37 °C ]',
-        mediaFile: null, mediaType: 'image'
-      }
-    ]
-  },
-
-  'lac-hydrogel': {
-    title: 'Lactate in Hydrogel',
-    slides: [
-      {
-        tag: 'Glycolysis',
-        heading: 'Lactic Acid Production',
-        text: 'Cells produce lactic acid as a by-product of glycolysis, particularly under hypoxic conditions. Lactic acid (pKₐ = 3.86, CRC Handbook) partially dissociates to lactate (C₃H₅O₃⁻) and H⁺, contributing to the total alkalinity balance and lowering pH.',
-        mediaLabel: '[ MATLAB plot: [Lac⁻], [HLac] vs radial position ]',
-        mediaFile: null, mediaType: 'image'
-      },
-      {
-        tag: 'Acid–base chemistry',
-        heading: 'pH Impact',
-        text: 'Lactate accumulation at the hydrogel centre lowers pH, which affects cell viability and shifts both carbonate and ammonia speciation. The pH radial profile is computed from total alkalinity (TA), TC, TN, and TL via the Newton–Raphson [H⁺] solver at each grid point.',
-        mediaLabel: '[ MATLAB plot: pH radial profile at different TL ]',
+        tag: 'Temperature sensitivity',
+        heading: 'Effect of Temperature on Gas Transfer and Metabolism',
+        text: 'Temperature affects gas solubility (Henry constants decrease with temperature), diffusivities (increase with temperature), and enzyme kinetics (Arrhenius). The model currently runs at 37 °C. A temperature sensitivity analysis is planned to bracket the effect of incubator temperature variation (±1 °C) on dissolved gas profiles and arginine yield.',
+        mediaLabel: '[ Figure: planned temperature sensitivity ]',
         mediaFile: null, mediaType: 'image'
       }
     ]
@@ -760,17 +906,24 @@ const SECTIONS = {
     title: 'Cell Model',
     slides: [
       {
-        tag: 'Biological model',
-        heading: 'Cell Metabolism',
-        text: 'Cells embedded in the hydrogel consume O₂ and glucose while producing CO₂, lactic acid, and ammonia. Metabolic fluxes are described by Michaelis–Menten kinetics with respect to local O₂ concentration. Under hypoxia, glycolytic flux increases and lactate production rises.',
-        mediaLabel: '[ MATLAB diagram: metabolic pathway schematic ]',
-        mediaFile: null, mediaType: 'image'
+        tag: 'Full metabolic model',
+        heading: 'Whole-Cell Model — Overview',
+        text: 'A full metabolic model of the SimCell has been constructed, covering lactate-induced acetyl-CoA and energy generation, arginine synthesis from ammonia, FGF production, and polyphosphate-driven ATP regeneration. However, this model requires extensive parameter tuning and quantitative data from wet-lab experiments before it can be used reliably in simulation. The pathways are mechanistically correct but many kinetic constants remain to be measured.',
+        mediaLabel: '[ Cell model overview diagram ]',
+        mediaFile: 'images/cell_model_overview.png', mediaType: 'image'
       },
       {
-        tag: 'Cell dynamics',
-        heading: 'Growth & Proliferation',
-        text: 'Cell density evolves over time as cells proliferate within the hydrogel scaffold. Growth rate is limited by local O₂ and nutrient availability. As density increases, diffusion gradients steepen — which may ultimately limit the viable tissue thickness.',
-        mediaLabel: '[ MATLAB plot: cell density vs time and radial position ]',
+        tag: 'Reduced-order model',
+        heading: 'Arginine Pathway — Implemented in SimCells',
+        text: 'The arginine synthesis pathway (α-KG + NH₄⁺ → Glutamate → … → Arginine via gdhA, argB–H, argJ) is the key pathway implemented in the SimCell ODE. To reduce model complexity, the aim is to collapse this to a single ODE step. Before doing so, we must verify that none of the four co-substrates consumed in the pathway are limiting: NADH (oxidised to NAD⁺ in the TCA cycle), ATP (regenerated via polyphosphate kinase ppk), Carbamoyl-P (required for ornithine → citrulline, argF), and Aspartic Acid (required for citrulline → argininosuccinate, argG). If none of these limit flux, a reduced-order model (ROM) is valid for the full SimCell ODE.',
+        mediaLabel: '[ Arginine synthesis pathway ]',
+        mediaFile: 'images/arg_pathway.png', mediaType: 'image'
+      },
+      {
+        tag: 'Model parameter fitting',
+        heading: 'Arginine Pathway — Data Needed to Fit the Model',
+        text: 'The arginine synthesis ODE requires the following experimentally measured quantities before the model can be fitted: (1) V<sub>max</sub> and K<sub>m</sub> for argJ (OAT/acetylornithinase) — purified enzyme assay or whole-cell flux measurement at known substrate concentrations; (2) V<sub>max</sub> and K<sub>m</sub> for argH (argininosuccinate lyase) — literature values exist for <em>M. tuberculosis</em> but not for the SimCell organism; (3) K<sub>m,export</sub> and V<sub>max,export</sub> for ArgO — the arginine exporter is poorly characterised, K<sub>m</sub> likely 1–5 mM rather than the current placeholder of 20 mM; (4) intracellular co-substrate concentrations: CbmP, ATP, Asp — these require metabolomics. Priority measurements are (3) and (4) as they most directly limit model predictive power.',
+        mediaLabel: '[ Diagram: arginine pathway with unknown parameters highlighted ]',
         mediaFile: null, mediaType: 'image'
       }
     ]
@@ -782,11 +935,11 @@ let curSection = null;
 let curSlide   = 0;
 
 // ── Panel functions ───────────────────────────────────────────
-function openPanel(key) {
+function openPanel(key, startSlide) {
   const sec = SECTIONS[key];
   if (!sec) return;
   curSection = key;
-  curSlide   = 0;
+  curSlide   = (startSlide !== undefined) ? Math.min(startSlide, sec.slides.length - 1) : 0;
   document.getElementById('ph-title').textContent = sec.title;
   renderSlide();
   document.getElementById('panel').classList.add('open');
@@ -801,20 +954,24 @@ function renderSlide() {
   const slide = sec.slides[curSlide];
   const total = sec.slides.length;
 
-  let mediaHTML;
-  if (slide.mediaFile) {
-    mediaHTML = slide.mediaType === 'video'
-      ? `<video src="${slide.mediaFile}" controls autoplay muted loop></video>`
-      : `<img src="${slide.mediaFile}" alt="${slide.heading}">`;
-  } else {
-    mediaHTML = `<span>${slide.mediaLabel}</span>`;
+  function mediaBlock(file, type, label) {
+    if (file) {
+      const inner = type === 'video'
+        ? `<video src="${file}" controls style="width:100%;border-radius:10px"></video>`
+        : `<img src="${file}" alt="">`;
+      return `<div class="slide-media">${inner}</div>`;
+    }
+    return label ? `<div class="slide-media"><span>${label}</span></div>` : '';
   }
 
   document.getElementById('slide-area').innerHTML =
     `<span class="slide-tag">${slide.tag}</span>
      <h2>${slide.heading}</h2>
      <p>${slide.text}</p>
-     <div class="slide-media">${mediaHTML}</div>`;
+     ${slide.equation ? `<div class="eq-block"><div class="eq-main">${slide.equation}</div>${slide.eqKey ? `<div class="eq-key">${slide.eqKey}</div>` : ''}</div>` : ''}
+     ${slide.listItems ? `<ul class="slide-list">${slide.listItems.map(i=>`<li>${i}</li>`).join('')}</ul>` : ''}
+     ${mediaBlock(slide.mediaFile, slide.mediaType, slide.mediaLabel)}
+     ${slide.mediaFile2 !== undefined ? mediaBlock(slide.mediaFile2, slide.mediaType, slide.mediaLabel2) : ''}`;
 
   document.getElementById('slide-ctr').textContent = `${curSlide + 1} / ${total}`;
   document.getElementById('prev-btn').disabled = curSlide === 0;
@@ -851,6 +1008,12 @@ document.addEventListener('keydown', e => {
   if (e.key === 'ArrowRight') changeSlide(1);
   if (e.key === 'ArrowLeft')  changeSlide(-1);
 });
+
+window.addEventListener('DOMContentLoaded', () => { openPanel('intro'); });
+
+function toggleNotebook() {
+  document.getElementById('notebook').classList.toggle('open');
+}
 </script>
 </body>
 </html>
