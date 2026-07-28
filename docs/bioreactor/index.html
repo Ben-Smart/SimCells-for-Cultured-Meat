@@ -760,13 +760,6 @@ const SECTIONS = {
         mediaFile: null, mediaType: 'image'
       },
       {
-        tag: 'SimCell gas demand',
-        heading: 'O₂ Consumption and CO₂ Production by SimCells',
-        text: 'SimCells consume O₂ and produce CO₂ at rates q<sub>O₂</sub> and q<sub>CO₂</sub> [mol m⁻³ s⁻¹] applied uniformly across all biofilm nodes. At steady state the shaker-driven k<sub>L</sub> supplies O₂ fast enough that dissolved O₂ does not run out — the model predicts adequate oxygenation across the hydrogel at the nominal operating RPM. However, CO₂ accumulates to elevated concentrations in the hydrogel interior, suggesting that CO₂ removal by the shaker alone may be limiting. Whether additional stirring is required to improve CO₂ stripping depends critically on the effective gel-phase diffusivity D<sub>eff</sub>: if D<sub>eff</sub> is high enough, CO₂ can escape laterally without forced convection. We will revisit this conclusion once the second diffusivity experiment is complete. Current assessment: the shaker is likely sufficient for O₂ supply, but CO₂ accumulation warrants monitoring.',
-        mediaLabel: null,
-        mediaFile: 'images/o2_co2_usage.png', mediaType: 'image'
-      },
-      {
         tag: 'Sufficiency analysis',
         heading: 'Is the Shaker Alone Sufficient?',
         text: 'The final frame of the simulation shows the steady-state concentration fields across the bioreactor. Dissolved O₂ (panel 3) remains at adequate levels throughout the hydrogel — the shaker-driven k<sub>L</sub> is sufficient to meet cellular demand at the nominal RPM. Free dissolved CO₂ (panel 4), however, is elevated in the hydrogel interior, indicating that CO₂ produced by the SimCells is not being stripped fast enough. This elevated CO₂ shifts the carbonate equilibrium, reducing local pH and thereby lowering NH₃ availability for arginine synthesis. Whether a stirrer is required depends on the effective gel-phase diffusivity D<sub>eff</sub> — this will be resolved once the second diffusivity experiment is complete. Current assessment: shaker sufficient for O₂; CO₂ accumulation is the primary concern.',
