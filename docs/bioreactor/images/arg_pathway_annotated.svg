@@ -21,11 +21,11 @@
   <ellipse cx="295" cy="415" rx="113" ry="15" fill="none" stroke="#22c55e" stroke-width="3"/>
 
   <!-- Red: Carbamoyl-P -->
-  <ellipse cx="73" cy="440" rx="77" ry="14" fill="none" stroke="#ef4444" stroke-width="3"/>
+  <ellipse cx="108" cy="440" rx="77" ry="14" fill="none" stroke="#ef4444" stroke-width="3"/>
 
   <!-- Green: CITRULLINE -->
-  <ellipse cx="295" cy="468" rx="105" ry="15" fill="none" stroke="#22c55e" stroke-width="3"/>
+  <ellipse cx="295" cy="488" rx="105" ry="15" fill="none" stroke="#22c55e" stroke-width="3"/>
 
   <!-- Green: Aspartic Acid -->
-  <ellipse cx="71" cy="495" rx="75" ry="14" fill="none" stroke="#22c55e" stroke-width="3"/>
+  <ellipse cx="106" cy="495" rx="75" ry="14" fill="none" stroke="#22c55e" stroke-width="3"/>
 </svg>
