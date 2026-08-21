@@ -517,6 +517,8 @@ header {
         <li>FGF2 Model</li>
         <li>Work on adding the mammal cell flux model in another segment</li>
         <li style="cursor:pointer;text-decoration:underline;text-underline-offset:2px;"
+            onclick="event.stopPropagation();openPanel('metabolomics')">Targeted metabolomics — arginine pathway enzyme concentrations</li>
+        <li style="cursor:pointer;text-decoration:underline;text-underline-offset:2px;"
             onclick="event.stopPropagation();openPanel('oscillators')">Agent based models</li>
       </ul>
     </div>
@@ -862,6 +864,17 @@ const SECTIONS = {
         heading: 'Upcoming Diffusivity Experiments',
         text: 'We are planning a new series of experiments to measure the effective diffusivity D<sub>eff</sub> of each species in the hydrogel. The approach is straightforward: the gel is equilibrated in water so that its initial internal concentrations are known, then submerged in medium with defined species concentrations and left undisturbed. At steady state, concentrations in the gel plus surrounding medium are measured (e.g. by sampling the bulk medium). Comparing the initial concentrations in the medium to the steady-state concentrations provides an estimate of D<sub>eff</sub> for each molecule via Fick\'s second law — without the convective artefacts that contaminated the first dataset.',
         mediaFile: 'images/diffusivity_beaker.svg', mediaType: 'image'
+      }
+    ]
+  },
+
+  metabolomics: {
+    title: 'Targeted Metabolomics',
+    slides: [
+      {
+        tag: 'Sapient Bioanalytics',
+        heading: 'Targeted Metabolomics — Constraining the Arginine Parameter Fit',
+        text: 'A key limitation of the current particle filter fitting is that the intracellular metabolite concentrations (initial conditions for the ODE) and the enzyme kinetic parameters (V<sub>max</sub>, K<sub>m</sub>) are fitted simultaneously from extracellular Arg<sub>e</sub> data alone. This leaves many parameters poorly identified. Targeted LC-MS/MS metabolomics from <strong>Sapient Bioanalytics</strong> offers a route to directly measure the intracellular concentrations of arginine pathway intermediates and cofactors at each time point, substantially tightening the fitting problem.<br><br><strong>Recommended panels (on intracellular cell extracts):</strong><br>• <em>Amino Acids Panel</em> — directly covers key pathway intermediates: Glutamate, Glutamine, Ornithine, Citrulline, Argininosuccinate, and Arginine itself. Knowing these intracellular pools at t = 0 fixes the IC parameters directly rather than fitting them from extracellular data.<br>• <em>Metabolic Dysregulation Panel</em> — covers α-ketoglutarate (aKG), ATP, ADP, AMP, NADH, NADPH, and organic acids. These are the cofactors that appear in the gdhA and arginine synthesis ODEs; their intracellular concentrations directly constrain the driving forces for each reaction.<br><br><strong>How measurements constrain enzyme concentrations:</strong> If intracellular metabolite concentrations are measured at two time points (e.g. t = 0 and t = 24 h), the change in each intermediate gives the net flux through each enzyme over that interval. Combined with K<sub>m</sub> values from literature and the measured substrate concentration, the observed flux = V<sub>max</sub> × S / (K<sub>m</sub> + S) can be solved for V<sub>max</sub> — which is proportional to the functional enzyme concentration ([E] × k<sub>cat</sub>). This effectively gives an independent estimate of each enzyme\'s activity without needing a purified-enzyme assay, and removes both V<sub>max</sub> and the IC parameters from the particle filter fitting, leaving only K<sub>m</sub> and membrane transport parameters to be inferred from extracellular time-series data.'
       }
     ]
   },
