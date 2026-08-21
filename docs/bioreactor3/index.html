@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SimCells Bioreactor — Talk 3</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background:#e8edf5;
+  color:#1e2d40;
+  font-family:'Segoe UI',system-ui,sans-serif;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* ─── Header ─── */
+header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 32px;
+  background:rgba(255,255,255,0.88);
+  backdrop-filter:blur(8px);
+  border-bottom:1px solid rgba(0,0,0,0.09);
+  box-shadow:0 1px 6px rgba(0,0,0,0.07);
+}
+.hdr-left { display:flex; align-items:center; gap:18px; }
+.hdr-title { font-size:1.1rem; font-weight:600; color:#1e3a6e; letter-spacing:.3px; }
+.hdr-sub   { font-size:.8rem; color:#4b5563; }
+.hdr-back  {
+  font-size:.8rem; color:#4b5563; text-decoration:none;
+  padding:4px 10px; border:1px solid rgba(0,0,0,.12); border-radius:6px;
+  transition:all .14s;
+}
+.hdr-back:hover { color:#1e3a6e; border-color:#1e3a6e; }
+
+/* ─── Main view ─── */
+#main-view {
+  display:flex; flex-direction:column; align-items:center;
+  padding:36px 20px 20px;
+  transition:padding-right .42s cubic-bezier(.4,0,.2,1);
+}
+#main-view.shifted {
+  padding-right: min(58%, 800px);
+}
+.reactor-wrap { position:relative; display:inline-block; }
+#reactor-svg {
+  width:300px;
+  filter:drop-shadow(0 8px 28px rgba(0,0,0,.14));
+}
+
+@keyframes pulse {
+  0%   { opacity:.85; r:7;  }
+  100% { opacity:0;   r:20; }
+}
+.pulse-ring { animation:pulse 2.2s ease-out infinite; }
+
+.hot { cursor:pointer; }
+.hot:hover { filter:brightness(1.18); }
+
+.hint {
+  margin-top:14px;
+  font-size:.78rem; color:#6b7280; letter-spacing:.4px;
+}
+
+/* ─── Notebook to-do ─── */
+.notebook {
+  margin-top:28px;
+  display:flex;
+  width:310px;
+  border-radius:6px;
+  box-shadow:3px 4px 18px rgba(0,0,0,.35), inset 0 0 0 1px rgba(0,0,0,.12);
+  overflow:hidden;
+  transform:rotate(-1.2deg);
+  cursor:pointer;
+  transition:transform .18s, box-shadow .18s;
+}
+.notebook:hover { transform:rotate(-0.4deg) scale(1.03); box-shadow:5px 6px 24px rgba(0,0,0,.45), inset 0 0 0 1px rgba(0,0,0,.12); }
+.nb-binding {
+  width:24px; flex-shrink:0;
+  background:repeating-linear-gradient(
+    180deg,
+    #b45309 0px, #b45309 7px,
+    #fefce8 7px, #fefce8 20px
+  );
+  border-right:2px solid #92400e;
+}
+.nb-inner {
+  flex:1;
+  padding:11px 13px 14px;
+  background:repeating-linear-gradient(
+    180deg,
+    #fefce8 0px, #fefce8 23px,
+    #bfdbfe 23px, #bfdbfe 24px
+  );
+}
+.nb-title {
+  font-size:.78rem; font-weight:700; color:#92400e;
+  margin-bottom:9px; padding-bottom:5px;
+  border-bottom:1.5px solid #fcd34d;
+}
+.nb-items { list-style:none; padding:0; margin:0; max-height:0; overflow:hidden; transition:max-height .38s ease; }
+.notebook.open .nb-items { max-height:600px; }
+.nb-chevron { float:right; display:inline-block; transition:transform .3s; line-height:1; }
+.notebook.open .nb-chevron { transform:rotate(180deg); }
+.nb-items li {
+  display:flex; align-items:flex-start; gap:7px;
+  font-size:.73rem; color:#1e293b; line-height:1.55;
+  padding:3px 0;
+}
+.nb-items li::before { content:'☐'; color:#78716c; flex-shrink:0; font-size:.8rem; margin-top:1px; }
+.nb-items li.nb-link { cursor:pointer; text-decoration:underline; text-underline-offset:2px; color:#1e3a6e; }
+.nb-items li.nb-link:hover { color:#1d4ed8; }
+
+/* ─── Slide Panel ─── */
+#panel {
+  position:fixed; top:0; right:0;
+  width:min(58%, 800px); height:100vh;
+  background:#0b1428;
+  border-left:1px solid rgba(100,180,255,.13);
+  transform:translateX(100%);
+  transition:transform .42s cubic-bezier(.4,0,.2,1);
+  display:flex; flex-direction:column;
+  z-index:300;
+  box-shadow:-20px 0 60px rgba(0,0,0,.6);
+}
+#panel.open { transform:translateX(0); }
+
+.ph {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:18px 26px;
+  border-bottom:1px solid rgba(255,255,255,.07);
+  flex-shrink:0;
+}
+.ph-title { font-size:1.05rem; font-weight:600; color:#7dd3fc; }
+.ph-close {
+  background:none; border:1px solid rgba(255,255,255,.14);
+  color:#94a3b8; width:30px; height:30px; border-radius:6px;
+  cursor:pointer; font-size:1rem;
+  display:flex; align-items:center; justify-content:center;
+  transition:all .14s;
+}
+.ph-close:hover { border-color:#7dd3fc; color:#7dd3fc; }
+
+.slide-area { flex:1; overflow-y:auto; padding:28px 26px; }
+
+.slide-tag {
+  display:inline-block;
+  background:rgba(125,211,252,.1); border:1px solid rgba(125,211,252,.22);
+  color:#7dd3fc; font-size:.72rem; padding:2px 10px; border-radius:99px;
+  margin-bottom:12px;
+}
+.slide-area h2 { font-size:1.2rem; color:#e2e8f0; margin-bottom:10px; }
+.slide-area p  { font-size:.9rem; color:#94a3b8; line-height:1.65; }
+
+.slide-media {
+  margin-top:18px;
+  width:100%; min-height:180px;
+  background:#111c36;
+  border:1px dashed rgba(100,180,255,.2);
+  border-radius:10px;
+  display:flex; align-items:center; justify-content:center;
+  color:#475569; font-size:.82rem;
+  overflow:hidden;
+}
+.slide-media img, .slide-media video {
+  width:100%; max-height:660px; object-fit:contain; border-radius:10px;
+}
+.slide-media-pair {
+  margin-top:18px;
+  display:grid; grid-template-columns:1fr 1fr; gap:10px;
+}
+.slide-media-pair .slide-media { margin-top:0; }
+.slide-media-pair .slide-media-label {
+  font-size:.72rem; color:#64748b; text-align:center; margin-top:4px;
+}
+
+.eq-block {
+  margin-top:18px;
+  padding:14px 22px;
+  background:rgba(125,211,252,.06);
+  border:1px solid rgba(125,211,252,.22);
+  border-radius:10px;
+  color:#e2e8f0;
+  font-family:'Courier New',monospace;
+  font-size:.95rem;
+  line-height:2;
+}
+.eq-block .eq-main { font-size:1.05rem; text-align:center; letter-spacing:.04em; }
+.eq-block .eq-key  { font-size:.78rem; color:#7dd3fc; margin-top:6px; }
+
+.slide-list { margin-top:16px; padding:0; list-style:none; }
+.slide-list li {
+  display:flex; align-items:flex-start; gap:10px;
+  padding:9px 0; border-bottom:1px solid rgba(255,255,255,.05);
+  font-size:.88rem; color:#cbd5e1; line-height:1.55;
+}
+.slide-list li:last-child { border-bottom:none; }
+.slide-list li::before { content:'▸'; color:#7dd3fc; flex-shrink:0; font-size:.95rem; margin-top:1px; }
+
+.placeholder-img {
+  margin-top:18px; padding:32px;
+  background:#111c36; border:1px dashed rgba(100,180,255,.2);
+  border-radius:10px; color:#334155; font-size:.8rem; text-align:center;
+}
+
+.pnav {
+  padding:14px 26px;
+  border-top:1px solid rgba(255,255,255,.06);
+  display:flex; align-items:center; justify-content:space-between;
+  flex-shrink:0;
+}
+.pnav-btn {
+  background:rgba(125,211,252,.08); border:1px solid rgba(125,211,252,.18);
+  color:#7dd3fc; padding:7px 18px; border-radius:8px;
+  cursor:pointer; font-size:.88rem; transition:all .14s;
+}
+.pnav-btn:hover:not(:disabled) { background:rgba(125,211,252,.18); }
+.pnav-btn:disabled { opacity:.3; cursor:not-allowed; }
+.pnav-ctr { font-size:.82rem; color:#64748b; }
+
+/* ─── Hydrogel View ─── */
+#hv {
+  position:fixed; inset:0;
+  background:#0e1e38;
+  z-index:200;
+  display:none; flex-direction:column;
+  opacity:0; transition:opacity .32s;
+}
+#hv.open { display:flex; opacity:1; }
+
+.hv-hdr {
+  display:flex; align-items:center; gap:14px;
+  padding:16px 28px;
+  border-bottom:1px solid rgba(255,255,255,.07);
+  flex-shrink:0;
+}
+.hv-back {
+  background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1);
+  color:#94a3b8; padding:6px 14px; border-radius:7px;
+  cursor:pointer; font-size:.88rem; transition:all .14s;
+}
+.hv-back:hover { color:#7dd3fc; border-color:#7dd3fc; }
+.hv-title { font-size:1.05rem; font-weight:600; color:#34d399; }
+.hv-hint  { margin-left:auto; font-size:.76rem; color:#475569; }
+
+.hv-body {
+  flex:1; display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  padding:20px; gap:16px;
+  overflow:hidden;
+}
+#hv-svg { max-width:660px; width:100%; }
+
+@keyframes d1 {
+  0%   {transform:translate(0,0);}
+  25%  {transform:translate(14px,-10px);}
+  50%  {transform:translate(-6px,-18px);}
+  75%  {transform:translate(-14px,-5px);}
+  100% {transform:translate(0,0);}
+}
+@keyframes d2 {
+  0%   {transform:translate(0,0);}
+  33%  {transform:translate(-12px,12px);}
+  66%  {transform:translate(10px,7px);}
+  100% {transform:translate(0,0);}
+}
+@keyframes d3 {
+  0%   {transform:translate(0,0);}
+  20%  {transform:translate(8px,14px);}
+  60%  {transform:translate(-10px,5px);}
+  100% {transform:translate(0,0);}
+}
+
+.hv-legend {
+  display:flex; flex-wrap:wrap; gap:10px; justify-content:center;
+  padding:6px 28px 14px;
+  flex-shrink:0;
+}
+.leg {
+  display:flex; align-items:center; gap:7px;
+  font-size:.8rem; color:#94a3b8;
+  cursor:pointer; padding:5px 12px;
+  border-radius:7px; border:1px solid transparent;
+  transition:all .14s;
+}
+.leg:hover { border-color:rgba(255,255,255,.15); color:#e2e8f0; }
+.leg-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+</style>
+</head>
+<body>
+
+<!-- ═══════ HEADER ═══════ -->
+<header>
+  <div class="hdr-left">
+    <a class="hdr-back" href="../bioreactor/">&larr; Talk 2</a>
+    <span class="hdr-title">SimCells Bioreactor — Talk 3</span>
+  </div>
+  <span class="hdr-sub">Click on any highlighted section to explore the model</span>
+</header>
+
+<!-- ═══════ MAIN BIOREACTOR VIEW ═══════ -->
+<div id="main-view">
+  <div class="reactor-wrap">
+    <svg id="reactor-svg" viewBox="0 0 300 560" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="wallG" x1="0" x2="1" y1="0" y2="0">
+          <stop offset="0%"   stop-color="#1a2d4a"/>
+          <stop offset="45%"  stop-color="#2c4470"/>
+          <stop offset="55%"  stop-color="#2c4470"/>
+          <stop offset="100%" stop-color="#1a2d4a"/>
+        </linearGradient>
+        <linearGradient id="gasG" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%"   stop-color="#bfdbfe" stop-opacity=".18"/>
+          <stop offset="100%" stop-color="#93c5fd" stop-opacity=".04"/>
+        </linearGradient>
+        <linearGradient id="liqG" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%"   stop-color="#1d4ed8" stop-opacity=".42"/>
+          <stop offset="100%" stop-color="#1e3a8a" stop-opacity=".22"/>
+        </linearGradient>
+        <linearGradient id="gelG" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%"   stop-color="#065f46" stop-opacity=".9"/>
+          <stop offset="100%" stop-color="#022c22"/>
+        </linearGradient>
+        <pattern id="gelDots" patternUnits="userSpaceOnUse" width="7" height="7">
+          <circle cx="3.5" cy="3.5" r="1.3" fill="#34d399" fill-opacity=".3"/>
+        </pattern>
+        <pattern id="threadP" patternUnits="userSpaceOnUse" width="200" height="9">
+          <line x1="0" y1="4.5" x2="200" y2="4.5" stroke="#3f5a7a" stroke-width="1.3"/>
+        </pattern>
+      </defs>
+
+      <!-- ── Outer vessel walls ── -->
+      <rect x="36"  y="118" width="16" height="392" fill="url(#wallG)"/>
+      <rect x="248" y="118" width="16" height="392" fill="url(#wallG)"/>
+      <rect x="36"  y="502" width="228" height="14"  fill="url(#wallG)" rx="3"/>
+
+      <!-- ── Threaded top cap ── -->
+      <rect x="52"  y="40"  width="196" height="80" fill="url(#wallG)" rx="4"/>
+      <rect x="52"  y="40"  width="196" height="80" fill="url(#threadP)" rx="4" opacity=".65"/>
+      <rect x="52"  y="40"  width="196" height="80" fill="none" stroke="#4a7aaa" stroke-width="1.4" rx="4"/>
+      <text x="150" y="85" fill="#7dd3fc" font-size="8" font-family="Segoe UI,sans-serif"
+            text-anchor="middle" opacity=".55">M45×4.5 6g</text>
+
+      <!-- ── Gas fill ── -->
+      <rect x="52"  y="118" width="196" height="104" fill="url(#gasG)"/>
+
+      <!-- ── Liquid annular space ── -->
+      <rect x="52"  y="222" width="36"  height="280" fill="url(#liqG)"/>
+      <rect x="212" y="222" width="36"  height="280" fill="url(#liqG)"/>
+
+      <!-- ── Inner vessel walls ── -->
+      <rect x="88"  y="118" width="14" height="396" fill="#18304f" stroke="#3b6ea8" stroke-width="1"/>
+      <rect x="198" y="118" width="14" height="396" fill="#18304f" stroke="#3b6ea8" stroke-width="1"/>
+
+      <!-- ── Gas inside inner vessel ── -->
+      <rect x="102" y="118" width="96" height="104" fill="url(#gasG)"/>
+
+      <!-- ── Liquid inside inner vessel ── -->
+      <rect x="102" y="222" width="96" height="50"  fill="url(#liqG)"/>
+      <rect x="102" y="378" width="96" height="124" fill="url(#liqG)"/>
+
+      <!-- ── Container walls ── -->
+      <rect x="85"  y="266" width="17" height="112" fill="#253c57" stroke="#5a85aa" stroke-width="1"/>
+      <rect x="198" y="266" width="17" height="112" fill="#253c57" stroke="#5a85aa" stroke-width="1"/>
+      <rect x="85"  y="360" width="130" height="18" fill="#253c57" stroke="#5a85aa" stroke-width="1"/>
+
+      <!-- ── Hydrogel ── -->
+      <rect x="102" y="272" width="96" height="88" fill="url(#gelG)" rx="1"/>
+      <rect x="102" y="272" width="96" height="88" fill="url(#gelDots)" rx="1"/>
+
+      <!-- ── Stirrer blades left ── -->
+      <rect x="85" y="270" width="6"  height="82" rx="2" fill="#4a5f82"/>
+      <rect x="53" y="278" width="36" height="9"  rx="2" fill="#3a5070" transform="rotate(-18,71,282)"/>
+      <rect x="53" y="298" width="36" height="9"  rx="2" fill="#4a6488" transform="rotate(8,71,302)"/>
+      <rect x="53" y="320" width="36" height="9"  rx="2" fill="#3a5070" transform="rotate(-14,71,324)"/>
+      <circle cx="88" cy="308" r="3" fill="#6080aa"/>
+
+      <!-- ── Stirrer blades right ── -->
+      <rect x="209" y="270" width="6"  height="82" rx="2" fill="#4a5f82"/>
+      <rect x="211" y="278" width="36" height="9"  rx="2" fill="#3a5070" transform="rotate(18,229,282)"/>
+      <rect x="211" y="298" width="36" height="9"  rx="2" fill="#4a6488" transform="rotate(-8,229,302)"/>
+      <rect x="211" y="320" width="36" height="9"  rx="2" fill="#3a5070" transform="rotate(14,229,324)"/>
+      <circle cx="212" cy="308" r="3" fill="#6080aa"/>
+
+      <!-- ── Gas-liquid interface ── -->
+      <path d="M52 222 Q67 214 82 222 Q97 230 112 222 Q127 214 142 222
+               Q157 230 172 222 Q187 214 202 222 Q217 230 232 222 Q247 214 264 222"
+            fill="none" stroke="#93c5fd" stroke-width="2.2" opacity=".75"/>
+
+      <!-- ══════════ CLICKABLE HOTSPOT REGIONS ══════════ -->
+      <rect x="52" y="210" width="196" height="24"  fill="transparent" class="hot" onclick="openPanel('interface')"/>
+      <rect x="48" y="260" width="46"  height="100" fill="transparent" class="hot" onclick="openPanel('stirrer')"/>
+      <rect x="206" y="260" width="46" height="100" fill="transparent" class="hot" onclick="openPanel('stirrer')"/>
+      <rect x="83"  y="264" width="22" height="116" fill="transparent" class="hot" onclick="openPanel('container')"/>
+      <rect x="195" y="264" width="22" height="116" fill="transparent" class="hot" onclick="openPanel('container')"/>
+      <rect x="83"  y="358" width="134" height="22" fill="transparent" class="hot" onclick="openPanel('container')"/>
+      <rect x="102" y="272" width="96" height="88"  fill="transparent" class="hot" onclick="openHydrogelView()"/>
+      <rect x="52"  y="222" width="36" height="36" fill="transparent" class="hot" onclick="openPanel('liquid')"/>
+      <rect x="212" y="222" width="36" height="36" fill="transparent" class="hot" onclick="openPanel('liquid')"/>
+      <rect x="52"  y="362" width="36" height="138" fill="transparent" class="hot" onclick="openPanel('liquid')"/>
+      <rect x="212" y="362" width="36" height="138" fill="transparent" class="hot" onclick="openPanel('liquid')"/>
+      <rect x="102" y="222" width="96" height="42" fill="transparent" class="hot" onclick="openPanel('liquid')"/>
+      <rect x="102" y="380" width="96" height="118" fill="transparent" class="hot" onclick="openPanel('liquid')"/>
+      <rect x="36"  y="498" width="228" height="22" fill="transparent" class="hot" onclick="openPanel('shaker')"/>
+      <!-- Gas zone → mass transfer -->
+      <rect x="102" y="118" width="96" height="100" fill="transparent" class="hot" onclick="openPanel('mass_transfer')"/>
+
+      <!-- ══════════ PULSE DOTS ══════════ -->
+      <!-- Gas-liquid interface -->
+      <g onclick="openPanel('interface')" class="hot">
+        <circle cx="258" cy="222" r="6" fill="#93c5fd"/>
+        <circle cx="258" cy="222" r="6" fill="none" stroke="#93c5fd" stroke-width="1.5" class="pulse-ring" style="animation-delay:.55s"/>
+      </g>
+      <!-- Stirrer -->
+      <g onclick="openPanel('stirrer')" class="hot">
+        <circle cx="25"  cy="308" r="6" fill="#c4b5fd"/>
+        <circle cx="25"  cy="308" r="6" fill="none" stroke="#c4b5fd" stroke-width="1.5" class="pulse-ring" style="animation-delay:1.1s"/>
+      </g>
+      <!-- Container -->
+      <g onclick="openPanel('container')" class="hot">
+        <circle cx="93" cy="313" r="6" fill="#fbbf24"/>
+        <circle cx="93" cy="313" r="6" fill="none" stroke="#fbbf24" stroke-width="1.5" class="pulse-ring" style="animation-delay:1.65s"/>
+      </g>
+      <!-- Hydrogel -->
+      <g onclick="openHydrogelView()" class="hot">
+        <circle cx="150" cy="316" r="6" fill="#34d399"/>
+        <circle cx="150" cy="316" r="6" fill="none" stroke="#34d399" stroke-width="1.5" class="pulse-ring" style="animation-delay:.8s"/>
+      </g>
+      <!-- Liquid -->
+      <g onclick="openPanel('liquid')" class="hot">
+        <circle cx="70" cy="450" r="6" fill="#38bdf8"/>
+        <circle cx="70" cy="450" r="6" fill="none" stroke="#38bdf8" stroke-width="1.5" class="pulse-ring" style="animation-delay:0.3s"/>
+      </g>
+      <!-- Shaker -->
+      <g onclick="openPanel('shaker')" class="hot">
+        <circle cx="25" cy="530" r="6" fill="#f97316"/>
+        <circle cx="25" cy="530" r="6" fill="none" stroke="#f97316" stroke-width="1.5" class="pulse-ring" style="animation-delay:2.2s"/>
+      </g>
+      <!-- Gel experiments (new — yellow, container area) -->
+      <g onclick="openPanel('gel')" class="hot">
+        <circle cx="215" cy="313" r="6" fill="#fde68a"/>
+        <circle cx="215" cy="313" r="6" fill="none" stroke="#fde68a" stroke-width="1.5" class="pulse-ring" style="animation-delay:0.9s"/>
+      </g>
+      <!-- Arginine PF (new — violet, inside hydrogel right) -->
+      <g onclick="openPanel('arginine_pf')" class="hot">
+        <circle cx="184" cy="303" r="6" fill="#a78bfa"/>
+        <circle cx="184" cy="303" r="6" fill="none" stroke="#a78bfa" stroke-width="1.5" class="pulse-ring" style="animation-delay:1.4s"/>
+      </g>
+      <!-- Mass transfer (new — orange, gas zone) -->
+      <g onclick="openPanel('mass_transfer')" class="hot">
+        <circle cx="150" cy="148" r="6" fill="#fb923c"/>
+        <circle cx="150" cy="148" r="6" fill="none" stroke="#fb923c" stroke-width="1.5" class="pulse-ring" style="animation-delay:1.9s"/>
+      </g>
+
+      <!-- ══════════ SECTION LABELS ══════════ -->
+      <line x1="252" y1="217" x2="238" y2="230" stroke="#1d4ed8" stroke-width=".8" stroke-dasharray="3,2"/>
+      <text x="236" y="242" fill="#1d4ed8" font-size="8" font-family="Segoe UI,sans-serif" text-anchor="end">Gas–liquid</text>
+      <text x="236" y="252" fill="#1d4ed8" font-size="8" font-family="Segoe UI,sans-serif" text-anchor="end">interface</text>
+
+      <line x1="25"  y1="302" x2="18"  y2="290" stroke="#6d28d9" stroke-width=".8" stroke-dasharray="3,2"/>
+      <text x="4"   y="286" fill="#6d28d9" font-size="8" font-family="Segoe UI,sans-serif" text-anchor="start">Stirrer</text>
+
+      <line x1="87" y1="307" x2="73" y2="294" stroke="#fbbf24" stroke-width=".8" stroke-dasharray="3,2"/>
+      <text x="71" y="290" fill="#fbbf24" font-size="8" font-family="Segoe UI,sans-serif" text-anchor="end">Hydrogel</text>
+      <text x="71" y="300" fill="#fbbf24" font-size="8" font-family="Segoe UI,sans-serif" text-anchor="end">container</text>
+
+      <line x1="150" y1="322" x2="150" y2="400" stroke="#34d399" stroke-width=".8" stroke-dasharray="3,2"/>
+      <text x="150" y="412" fill="#34d399" font-size="8" font-family="Segoe UI,sans-serif" text-anchor="middle">Hydrogel</text>
+
+      <line x1="64" y1="446" x2="40" y2="436" stroke="#38bdf8" stroke-width=".8" stroke-dasharray="3,2"/>
+      <text x="4" y="432" fill="#38bdf8" font-size="8" font-family="Segoe UI,sans-serif" text-anchor="start">Liquid</text>
+
+      <line x1="31" y1="526" x2="52" y2="520" stroke="#f97316" stroke-width=".8" stroke-dasharray="3,2"/>
+      <text x="54" y="517" fill="#f97316" font-size="8" font-family="Segoe UI,sans-serif" text-anchor="start">Shaker</text>
+
+      <!-- New labels -->
+      <line x1="215" y1="307" x2="228" y2="294" stroke="#fde68a" stroke-width=".8" stroke-dasharray="3,2"/>
+      <text x="230" y="290" fill="#fde68a" font-size="8" font-family="Segoe UI,sans-serif" text-anchor="start">Gel D&#x1d49d;</text>
+
+      <line x1="184" y1="297" x2="184" y2="282" stroke="#a78bfa" stroke-width=".8" stroke-dasharray="3,2"/>
+      <text x="184" y="278" fill="#a78bfa" font-size="8" font-family="Segoe UI,sans-serif" text-anchor="middle">Arg PF</text>
+
+      <line x1="150" y1="142" x2="164" y2="134" stroke="#fb923c" stroke-width=".8" stroke-dasharray="3,2"/>
+      <text x="166" y="130" fill="#fb923c" font-size="8" font-family="Segoe UI,sans-serif" text-anchor="start">CFD before/after</text>
+    </svg>
+  </div>
+  <p class="hint">Click on any highlighted section to explore the model</p>
+
+  <!-- Notebook to-do -->
+  <div class="notebook" id="notebook" onclick="toggleNotebook()" title="Click to expand">
+    <div class="nb-binding"></div>
+    <div class="nb-inner">
+      <div class="nb-title">&#x1F4DD;&nbsp; To do before next talk&nbsp;<span class="nb-chevron">&#x25BE;</span></div>
+      <ul class="nb-items">
+        <li class="nb-link" onclick="event.stopPropagation(); openPanel('gel')">Diffusivity parameters from 2nd experiment</li>
+        <li class="nb-link" onclick="event.stopPropagation(); openPanel('arginine_pf')">Arginine pathway particle filter fitting</li>
+        <li class="nb-link" onclick="event.stopPropagation(); openPanel('oscillators')">Agent-based oscillator models (repressilator + chaotic)</li>
+        <li>FGF2 model</li>
+        <li>Mammalian cell flux model segment</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE PANEL ═══════ -->
+<div id="panel">
+  <div class="ph">
+    <span class="ph-title" id="ph-title">Section</span>
+    <button class="ph-close" onclick="closePanel()">&#x2715;</button>
+  </div>
+  <div class="slide-area" id="slide-area"></div>
+  <div class="pnav">
+    <button class="pnav-btn" id="prev-btn" onclick="changeSlide(-1)">&larr; Prev</button>
+    <span class="pnav-ctr" id="slide-ctr"></span>
+    <button class="pnav-btn" id="next-btn" onclick="changeSlide(1)">Next &rarr;</button>
+  </div>
+</div>
+
+<!-- ═══════ HYDROGEL DETAIL VIEW ═══════ -->
+<div id="hv">
+  <div class="hv-hdr">
+    <button class="hv-back" onclick="closeHydrogelView()">&larr; Back to bioreactor</button>
+    <span class="hv-title">Hydrogel &mdash; Species Transport &amp; Cell Model</span>
+    <span class="hv-hint">Click a species or the cells to explore the model</span>
+  </div>
+  <div class="hv-body">
+    <svg id="hv-svg" viewBox="0 0 660 348" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="cellG" cx="35%" cy="32%">
+          <stop offset="0%"   stop-color="#86efac"/>
+          <stop offset="100%" stop-color="#14532d"/>
+        </radialGradient>
+        <radialGradient id="hvBg" cx="50%" cy="50%">
+          <stop offset="0%"   stop-color="#042f1d"/>
+          <stop offset="100%" stop-color="#020f0a"/>
+        </radialGradient>
+        <pattern id="hvDots" patternUnits="userSpaceOnUse" width="9" height="9">
+          <circle cx="4.5" cy="4.5" r="1.3" fill="#34d399" fill-opacity=".14"/>
+        </pattern>
+        <filter id="glo">
+          <feGaussianBlur stdDeviation="2.5" result="b"/>
+          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+      <rect x="0" y="0" width="660" height="348" fill="url(#hvBg)" rx="10"/>
+      <rect x="0" y="0" width="660" height="348" fill="url(#hvDots)" rx="10"/>
+      <line x1="0" y1="23" x2="660" y2="23" stroke="#7dd3fc" stroke-width="1" stroke-dasharray="5,3" opacity=".32"/>
+      <text x="330" y="17" fill="#7dd3fc" font-size="9.5" font-family="Segoe UI,sans-serif" text-anchor="middle" opacity=".65">
+        &mdash; Liquid medium interface &mdash;
+      </text>
+      <g class="hot" onclick="openPanel('cells')" filter="url(#glo)">
+        <ellipse cx="162" cy="182" rx="44" ry="34" fill="url(#cellG)" opacity=".88"/>
+        <ellipse cx="162" cy="182" rx="44" ry="34" fill="none" stroke="#4ade80" stroke-width="1.5"/>
+        <ellipse cx="162" cy="179" rx="13"  ry="11"  fill="#0f4023" opacity=".8"/>
+        <text x="162" y="228" fill="#86efac" font-size="9.5" font-family="Segoe UI,sans-serif" text-anchor="middle">Cell</text>
+      </g>
+      <g class="hot" onclick="openPanel('cells')" filter="url(#glo)">
+        <ellipse cx="340" cy="258" rx="40" ry="30" fill="url(#cellG)" opacity=".88"/>
+        <ellipse cx="340" cy="258" rx="40" ry="30" fill="none" stroke="#4ade80" stroke-width="1.5"/>
+        <ellipse cx="340" cy="255" rx="12"  ry="10"  fill="#0f4023" opacity=".8"/>
+        <text x="340" y="300" fill="#86efac" font-size="9.5" font-family="Segoe UI,sans-serif" text-anchor="middle">Cell</text>
+      </g>
+      <g class="hot" onclick="openPanel('cells')" filter="url(#glo)">
+        <ellipse cx="502" cy="172" rx="36" ry="28" fill="url(#cellG)" opacity=".88"/>
+        <ellipse cx="502" cy="172" rx="36" ry="28" fill="none" stroke="#4ade80" stroke-width="1.5"/>
+        <ellipse cx="502" cy="169" rx="11"  ry="9"   fill="#0f4023" opacity=".8"/>
+        <text x="502" y="212" fill="#86efac" font-size="9.5" font-family="Segoe UI,sans-serif" text-anchor="middle">Cell</text>
+      </g>
+      <!-- CO2 -->
+      <g class="hot" onclick="openPanel('molecule')" style="animation:d1 4s ease-in-out infinite">
+        <circle cx="62"  cy="82"  r="15" fill="#ef4444" opacity=".9" filter="url(#glo)"/>
+        <text x="62" y="86" fill="white" font-size="8.5" font-weight="bold" font-family="Segoe UI,sans-serif" text-anchor="middle">CO&#x2082;</text>
+      </g>
+      <g class="hot" onclick="openPanel('molecule')" style="animation:d2 5.2s ease-in-out infinite">
+        <circle cx="248" cy="112" r="15" fill="#ef4444" opacity=".9" filter="url(#glo)"/>
+        <text x="248" y="116" fill="white" font-size="8.5" font-weight="bold" font-family="Segoe UI,sans-serif" text-anchor="middle">CO&#x2082;</text>
+      </g>
+      <g class="hot" onclick="openPanel('molecule')" style="animation:d3 3.8s ease-in-out infinite">
+        <circle cx="425" cy="308" r="15" fill="#ef4444" opacity=".9" filter="url(#glo)"/>
+        <text x="425" y="312" fill="white" font-size="8.5" font-weight="bold" font-family="Segoe UI,sans-serif" text-anchor="middle">CO&#x2082;</text>
+      </g>
+      <!-- O2 -->
+      <g class="hot" onclick="openPanel('molecule')" style="animation:d2 4.6s ease-in-out infinite">
+        <circle cx="118" cy="295" r="15" fill="#3b82f6" opacity=".9" filter="url(#glo)"/>
+        <text x="118" y="299" fill="white" font-size="8.5" font-weight="bold" font-family="Segoe UI,sans-serif" text-anchor="middle">O&#x2082;</text>
+      </g>
+      <g class="hot" onclick="openPanel('molecule')" style="animation:d1 3.5s ease-in-out infinite">
+        <circle cx="435" cy="68"  r="15" fill="#3b82f6" opacity=".9" filter="url(#glo)"/>
+        <text x="435" y="72" fill="white" font-size="8.5" font-weight="bold" font-family="Segoe UI,sans-serif" text-anchor="middle">O&#x2082;</text>
+      </g>
+      <g class="hot" onclick="openPanel('molecule')" style="animation:d3 5.5s ease-in-out infinite">
+        <circle cx="570" cy="282" r="15" fill="#3b82f6" opacity=".9" filter="url(#glo)"/>
+        <text x="570" y="286" fill="white" font-size="8.5" font-weight="bold" font-family="Segoe UI,sans-serif" text-anchor="middle">O&#x2082;</text>
+      </g>
+      <!-- NH3 -->
+      <g class="hot" onclick="openPanel('molecule')" style="animation:d3 4.4s ease-in-out infinite">
+        <circle cx="288" cy="52"  r="15" fill="#f59e0b" opacity=".9" filter="url(#glo)"/>
+        <text x="288" y="56" fill="white" font-size="8.5" font-weight="bold" font-family="Segoe UI,sans-serif" text-anchor="middle">NH&#x2083;</text>
+      </g>
+      <g class="hot" onclick="openPanel('molecule')" style="animation:d1 5.8s ease-in-out infinite">
+        <circle cx="528" cy="320" r="15" fill="#f59e0b" opacity=".9" filter="url(#glo)"/>
+        <text x="528" y="324" fill="white" font-size="8.5" font-weight="bold" font-family="Segoe UI,sans-serif" text-anchor="middle">NH&#x2083;</text>
+      </g>
+      <!-- Lac -->
+      <g class="hot" onclick="openPanel('molecule')" style="animation:d2 3.3s ease-in-out infinite">
+        <circle cx="592" cy="108" r="15" fill="#a855f7" opacity=".9" filter="url(#glo)"/>
+        <text x="592" y="112" fill="white" font-size="7.5" font-weight="bold" font-family="Segoe UI,sans-serif" text-anchor="middle">Lac&#x207B;</text>
+      </g>
+      <g class="hot" onclick="openPanel('molecule')" style="animation:d3 5s ease-in-out infinite">
+        <circle cx="218" cy="322" r="15" fill="#a855f7" opacity=".9" filter="url(#glo)"/>
+        <text x="218" y="326" fill="white" font-size="7.5" font-weight="bold" font-family="Segoe UI,sans-serif" text-anchor="middle">Lac&#x207B;</text>
+      </g>
+    </svg>
+    <div class="hv-legend">
+      <div class="leg" onclick="openPanel('molecule')"><div class="leg-dot" style="background:#ef4444"></div>CO&#x2082; model</div>
+      <div class="leg" onclick="openPanel('molecule')"><div class="leg-dot" style="background:#3b82f6"></div>O&#x2082; model</div>
+      <div class="leg" onclick="openPanel('molecule')"><div class="leg-dot" style="background:#f59e0b"></div>NH&#x2083; / NH&#x2084;&#x207A; model</div>
+      <div class="leg" onclick="openPanel('molecule')"><div class="leg-dot" style="background:#a855f7"></div>Lactate model</div>
+      <div class="leg" onclick="openPanel('cells')"><div class="leg-dot" style="background:#4ade80"></div>Cell model</div>
+      <div class="leg" onclick="openPanel('arginine_pf')"><div class="leg-dot" style="background:#a78bfa"></div>Arginine PF fit</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SECTIONS = {
+
+  // ──────────────────────────────────────────────────────────────────
+  // EXISTING SECTIONS (carried forward)
+  // ──────────────────────────────────────────────────────────────────
+
+  interface: {
+    title: 'Gas–Liquid Interface & Mass Transfer',
+    slides: [
+      {
+        tag: 'Gas-liquid chemistry',
+        heading: 'CO₂ / O₂ Transfer and pH Equilibria',
+        text: 'CO₂ and O₂ dissolve across the gas–liquid interface following Henry's Law. In the liquid phase CO₂ undergoes the full carbonate equilibrium (CO₂(aq) ⇌ H₂CO₃ ⇌ HCO₃⁻ + H⁺ ⇌ CO₃²⁻ + H⁺), while O₂ is consumed by cellular respiration. Lactic acid and ammonia also contribute to the proton balance, so the local pH is set by gas transfer, lactate production, and NH₄⁺ speciation together.',
+        mediaFile: '../bioreactor/images/chem_diagram.svg', mediaType: 'image'
+      }
+    ]
+  },
+
+  shaker: {
+    title: 'Shaker Plate — Gas Transfer',
+    slides: [
+      {
+        tag: 'Mass transfer coefficient',
+        heading: 'k<sub>L</sub> for Orbital Shaker Plate',
+        text: 'Gas–liquid mass transfer driven by the orbital shaker is described by the Büchs correlation. The volumetric mass-transfer coefficient k<sub>L</sub> scales strongly with angular velocity (ω².¹²) and inversely with liquid volume, capturing the thinning of the liquid film at higher shaking speeds.',
+        equation: 'k<sub>L</sub> = 1.06×10<sup>−3</sup> · d<sup>4.3</sup> · ω<sup>2.12</sup> · V<sub>L</sub><sup>−1.2</sup> · ν<sup>−0.21</sup> · D<sub>L</sub><sup>0.12</sup> · g<sup>0.51</sup>',
+        eqKey: 'd = orbital diameter [m] · ω = angular velocity [rad s<sup>−1</sup>] · V<sub>L</sub> = liquid volume [m³]',
+        mediaFile: null, mediaType: 'image'
+      },
+      {
+        tag: 'Sufficiency analysis',
+        heading: 'Is the Shaker Alone Sufficient?',
+        text: 'The shaker-driven k<sub>L</sub> is sufficient to meet cellular O₂ demand at nominal RPM. Free dissolved CO₂ is, however, elevated in the hydrogel interior — the CO₂ produced by SimCells is not being stripped fast enough, shifting the carbonate equilibrium and lowering local pH. Whether a stirrer is required depends on the effective gel-phase diffusivity D<sub>eff</sub>, which is the subject of the next diffusivity experiment.',
+        mediaFile: '../bioreactor/images/Shaker_change_new.png', mediaType: 'image'
+      }
+    ]
+  },
+
+  liquid: {
+    title: 'Liquid Segment — Media & pH',
+    slides: [
+      {
+        tag: 'Media composition & pH model',
+        heading: 'Initial Medium and pH Buffering',
+        text: 'The liquid node tracks six dissolved species: lactate, NH₄⁺, O₂, total inorganic carbon (TC), total alkalinity (TA), and arginine. Local pH is computed at each time step by solving the charge balance for the bicarbonate–phosphate–ammonia–lactate–arginine buffer system via Newton–Raphson on TA.',
+        equation: 'TA = [HCO₃⁻] + 2[CO₃²⁻] + [NH₃] + [Lac⁻] + [HPO₄²⁻] + [ArgNH₂] + [OH⁻] − [H⁺]',
+        eqKey: 'Solved iteratively at each outer time step · pH = −log₁₀([H⁺]/1000)',
+        mediaFile: null, mediaType: 'image'
+      },
+      {
+        tag: 'Measured media data',
+        heading: 'Media Composition — Day 2 Baseline',
+        text: 'Measured ion concentrations from spent-medium experiments were used to set initial conditions. Day 2 data were chosen as the model start point: Na⁺ = 147.6 mM, K⁺ = 4.16 mM, NH₄⁺ = 1.18 mM, Lac = 0.035 mM, pH = 7.745, pCO₂ = 4.30 mmHg, S = 9.40 PSU.',
+        mediaFile: '../bioreactor/images/Media_consentrations_day2.png', mediaType: 'image'
+      }
+    ]
+  },
+
+  stirrer: {
+    title: 'Stirrer — Mixing Model',
+    slides: [
+      {
+        tag: 'Bioreactor design',
+        heading: 'Stirrer Geometry',
+        text: 'Stirrer blades are located in the annular space between the inner and outer vessels. Blade radius = 26.37 mm. At 3 rev s⁻¹, tip velocity ≈ 0.249 m s⁻¹. The setric-style impellers maintain a well-mixed liquid phase in the annular space surrounding the hydrogel container.',
+        equation: 'K<sub>L</sub> = 0.62 × √(ω / ν) × (ν / D<sub>L</sub>)<sup>1/3</sup>',
+        eqKey: 'ω = angular velocity [rad s<sup>−1</sup>] · ν = kinematic viscosity · D<sub>L</sub> = liquid-phase diffusivity',
+        mediaFile: '../bioreactor/images/rotation_effect.png', mediaType: 'image'
+      }
+    ]
+  },
+
+  container: {
+    title: 'Hydrogel Container',
+    slides: [
+      {
+        tag: 'Pore area fraction',
+        heading: 'Diffusive Area Through the Container Walls',
+        text: 'Only pores allow diffusion through the plastic walls. The effective diffusive area is modelled as A₀ = 0.503 of the total boundary area — roughly half the wall area is open to diffusion. This parameter directly scales the flux of O₂, CO₂, NH₃, and lactate between bulk liquid and hydrogel interior.',
+        mediaFile: '../bioreactor/images/bioreactor_species_animation_normal.mp4', mediaType: 'video'
+      },
+      {
+        tag: 'Solid-wall comparison',
+        heading: 'Effect of Solid Walls — Top-Surface Diffusion Only',
+        text: 'If the container walls were solid (A₀ = 0), molecules could only enter the hydrogel from the open top surface. The concentration gradient becomes steep at the top face and species struggle to penetrate the full depth of the hydrogel. Porous side walls are essential for adequate nutrient supply to cells throughout the gel volume.',
+        mediaFile: '../bioreactor/images/bioreactor_species_animation_walls.mp4', mediaType: 'video'
+      }
+    ]
+  },
+
+  molecule: {
+    title: 'Species Transport in Hydrogel',
+    slides: [
+      {
+        tag: 'SimCell gas consumption',
+        heading: 'O₂ and CO₂ in the Hydrogel — Steady-State Assessment',
+        text: 'At steady state, the shaker supplies enough O₂ that dissolved oxygen does not run out across the hydrogel. CO₂ produced by the SimCells accumulates in the hydrogel interior, lowering local pH and shifting the NH₃/NH₄⁺ equilibrium toward NH₄⁺ — reducing the free NH₃ available for arginine synthesis. Whether a stirrer is needed depends on D<sub>eff</sub>.',
+        mediaFile: '../bioreactor/images/o2_co2_usage.png', mediaType: 'image'
+      },
+      {
+        tag: 'pH effect on SimCells',
+        heading: 'Effect of pH on Arginine Production',
+        text: 'Local pH inside the hydrogel influences arginine yield through NH₃/NH₄⁺ speciation: at lower pH more NH₃ converts to membrane-impermeable NH₄⁺, starving the gdhA pathway. Enzyme activity also decreases below pH 7.0. Both effects are captured in the model.',
+        mediaFile: '../bioreactor/images/Arginine_pH_dependent.png', mediaType: 'image'
+      },
+      {
+        tag: 'Salinity sensitivity',
+        heading: 'Effect of Salinity on Gas Solubility',
+        text: 'Higher ionic strength reduces O₂ and CO₂ solubility (salting-out effect). The sensitivity sweep (0.01–100 PSU) shows that dissolved O₂ and free CO₂ decrease monotonically with salinity. Physiological media (S ≈ 9–10 PSU) sits in a region where the effect is modest but non-negligible.',
+        mediaFile: '../bioreactor/images/Salinity_changes_new.png', mediaType: 'image'
+      }
+    ]
+  },
+
+  cells: {
+    title: 'Cell Model',
+    slides: [
+      {
+        tag: 'Full metabolic model',
+        heading: 'Whole-Cell Model — Overview',
+        text: 'A full metabolic model of the SimCell covers lactate-driven acetyl-CoA, TCA cycle energy generation, arginine synthesis from ammonia, and polyphosphate-driven ATP regeneration. The model is now coupled to the 2-D CFD via three exchange fluxes (lactate uptake, NH₄⁺ uptake, arginine secretion) computed at every spatial node and time step.',
+        mediaFile: '../bioreactor/images/cell_model_overview.png', mediaType: 'image'
+      },
+      {
+        tag: 'Reduced-order model',
+        heading: 'Arginine Pathway — Implemented in SimCells',
+        text: 'The arginine synthesis pathway (α-KG + NH₄⁺ → Glutamate → … → Arginine via gdhA, argB–H, argJ) is collapsed to a single ODE step (ArgD) with three co-substrates: AcCoA, NH₄⁺, and ATP. This ROM is valid if none of the co-substrates are chronically limiting — an assumption the particle filter is used to test.',
+        mediaFile: '../bioreactor/images/arg_pathway.png', mediaType: 'image'
+      },
+      {
+        tag: 'Annotated pathway',
+        heading: 'Arginine Pathway — Rate-Limiting Steps',
+        text: 'The annotated pathway (below) highlights the reactions collapsed into the ArgD lumped step and the ArgO exporter. Km values for ArgO are poorly characterised — the particle filter posterior (see Arginine PF section) has updated this significantly from the pre-fit placeholder.',
+        mediaFile: '../bioreactor/images/arg_pathway_annotated.svg', mediaType: 'image'
+      }
+    ]
+  },
+
+  // ──────────────────────────────────────────────────────────────────
+  // NEW SECTIONS
+  // ──────────────────────────────────────────────────────────────────
+
+  gel: {
+    title: 'Hydrogel — Diffusivity Experiments',
+    slides: [
+      {
+        tag: 'Why D_eff matters',
+        heading: 'Effective Diffusivity in the Hydrogel',
+        text: 'The effective diffusivity D<sub>eff</sub> governs how fast O₂, CO₂, NH₃, lactate, and arginine move through the hydrogel matrix. In the model, D<sub>eff</sub> = φ · D<sub>liquid</sub>, where φ is the tortuosity-porosity factor. A low φ means CO₂ accumulates in the hydrogel interior — lowering pH and suppressing arginine production. A high φ means the shaker alone is sufficient for all species. The current model uses a literature placeholder; the value must be measured in our specific hydrogel formulation.',
+        mediaFile: null, mediaType: 'image',
+        mediaLabel: '[ Gel photo — to be added ]'
+      },
+      {
+        tag: 'First experiment — outcome',
+        heading: 'First Diffusivity Experiment — Anomalous Result',
+        text: 'The first experiment attempted to measure D<sub>eff</sub> by fitting the passive diffusion profile of a tracer (dye or ion) into the gel disc over time. The fitted D<sub>eff</sub> values were anomalously high — consistent with a convective or advective contribution rather than pure passive diffusion. Bulk fluid movement in the surrounding bath was not eliminated, so the tracer front advanced faster than pure diffusion would predict. The fitted values shown below are therefore not reliable estimates of the true gel diffusivity.',
+        mediaFile: 'images/D_eff.png', mediaType: 'image'
+      },
+      {
+        tag: 'Next experiment — design',
+        heading: 'Upcoming Diffusivity Experiment — Protocol Revision',
+        text: 'The revised experiment aims to eliminate bulk fluid movement entirely. Proposed changes: (1) use a closed diffusion cell (Franz cell or Ussing chamber geometry) where the donor and acceptor compartments are separated only by the gel disc; (2) sample the acceptor compartment at fixed intervals rather than imaging the gel; (3) use a tracer that can be measured at low concentration (fluorescein or a small fluorescent dextran) to allow accurate sampling without disturbing the system. The fitted D<sub>eff</sub> will be used to update the tortuosity-porosity factor φ in the 2-D CFD model and to re-evaluate whether a stirrer is needed for adequate CO₂ stripping.',
+        mediaFile: null, mediaType: 'image',
+        mediaLabel: '[ Experimental setup schematic — to be added ]'
+      }
+    ]
+  },
+
+  arginine_pf: {
+    title: 'Arginine Model — Particle Filter Fitting',
+    slides: [
+      {
+        tag: 'M9 / 7D / 14D time series',
+        heading: 'Observed States — Arg<sub>e</sub> and NH₄⁺ vs Time',
+        text: 'The bootstrap SIR particle filter was fitted to extracellular arginine [Arg]<sub>e</sub> and ammonium [NH₄⁺]<sub>e</sub> measured at 24, 48, and 96 hours under three medium conditions: M9 minimal medium (replete), 14-day depleted medium (14D), and 7-day depleted medium (7D). Shaded bands show the ±2 SD credible interval of the 90% particle set. The solid lines show the posterior-mean ODE trajectory. White circles are measured data points. The three conditions differ mainly in their initial lactate and NH₄⁺ availability, which drives the arginine production rate.',
+        mediaFile: 'images/arg_pf_timeseries.png', mediaType: 'image',
+        mediaLabel: '[ Export Fig 1 from plot_pf_argpath_results.m → images/arg_pf_timeseries.png ]'
+      },
+      {
+        tag: 'Particle filter method',
+        heading: 'Bootstrap SIR Particle Filter',
+        text: 'The particle filter propagates N = 2000 weighted particles through the ODE at each measurement time. Each particle carries an augmented state vector: [ODE states (7); log kinetic parameters (11); log initial conditions (5)]. At each observation, particles are reweighted by the likelihood p(y | x) and resampled (systematic resampling). Prior widths σ<sub>init</sub> are scaled by normalised parameter sensitivity S<sub>norm</sub> — high-sensitivity parameters start with a narrower prior, reflecting greater prior information. The posterior mean and standard deviation of each parameter are computed from the final weighted particle cloud.',
+        equation: 'w<sub>i</sub> ∝ exp(−½ (y − ŷ<sub>i</sub>)ᵀ R<sup>−1</sup> (y − ŷ<sub>i</sub>))',
+        eqKey: 'y = observed [Arg]_e, [NH4+]_e · R = measurement noise covariance · ŷ_i = ODE prediction for particle i'
+      }
+    ]
+  },
+
+  arginine_params: {
+    title: 'Arginine Model — Parameter Estimates',
+    slides: [
+      {
+        tag: 'Kinetic parameter estimates',
+        heading: 'Kinetic Parameters — Nominal vs PF Posterior',
+        text: 'Grey bars show nominal (literature) values; blue bars show the PF posterior mean; error bars show the standard deviation across particles (posterior uncertainty). Diamond markers on the right axis show the sensitivity-scaled σ<sub>init</sub> — the initial proposal width in log-space. Parameters that shifted most from nominal: <strong>k_argO</strong> (exporter V<sub>max</sub>) increased ~100× from the placeholder, and <strong>Km_argO</strong> increased by four orders of magnitude, indicating that arginine export operates far below saturation under these conditions. <strong>k_argD</strong> and its Km values also shifted substantially.',
+        mediaFile: 'images/arg_pf_params_kinetic.png', mediaType: 'image',
+        mediaLabel: '[ Export Fig 2 top from plot_pf_argpath_results.m → images/arg_pf_params_kinetic.png ]'
+      },
+      {
+        tag: 'Initial condition estimates',
+        heading: 'Initial Conditions — Nominal vs PF Posterior',
+        text: 'Purple bars show the PF posterior estimates of the five fitted initial conditions: [Arg]<sub>c,0</sub>, AcCoA<sub>0</sub>, ATP<sub>0</sub>, P_P2<sub>0</sub>, P_argT<sub>0</sub>. The large shifts in AcCoA<sub>0</sub> (×2000) and ATP<sub>0</sub> (×3) reflect the metabolic state of the culture at the beginning of the experiment, which was far from the textbook resting state. These are not errors in the fitting — they are genuine information about the physiological condition of the cells at t = 0.',
+        mediaFile: 'images/arg_pf_params_ic.png', mediaType: 'image',
+        mediaLabel: '[ Export Fig 2 bottom from plot_pf_argpath_results.m → images/arg_pf_params_ic.png ]'
+      },
+      {
+        tag: 'Arginine output',
+        heading: 'Posterior Arginine Trajectories vs Data',
+        text: 'The posterior-mean ODE trajectories for [Arg]<sub>e</sub> under all three conditions, with the ±2 SD credible band. M9 and 7D are well-captured. The 14D condition shows a slight systematic underprediction at 96 hours — consistent with the depleted medium having a different initial NH₄⁺ pool than the other conditions, which the single set of fitted kinetic parameters cannot fully accommodate. This residual bias motivates adding intracellular metabolite observations (Sapient metabolomics) to break the ArgD–ArgO degeneracy.',
+        mediaFile: 'images/arg_pf_arg_output.png', mediaType: 'image',
+        mediaLabel: '[ Arg_e overlay plot → images/arg_pf_arg_output.png ]'
+      }
+    ]
+  },
+
+  simcell_fit: {
+    title: 'SimCell Model — Full Fitting',
+    slides: [
+      {
+        tag: 'Full model overview',
+        heading: '14-State SimCell ODE Coupled to the 2-D CFD',
+        text: 'The full SimCell model comprises 14 ODE states per spatial node: intracellular lactate, NH₄⁺, AcCoA, Arg, ATP, ADP, polyP, six protein classes (P_lacT, P_P1, P_tca, P_P2, P_argT, P_ppk), and the ETC ATP yield (n_atp_eff). Reactions include lactate transport, lldD+PDH, TCA+ETC, ArgD, ArgO, PPK, protein synthesis, and ATP maintenance. This is substantially more complex than the 7-state arginine-only model: the ATP/ADP and AcCoA pools are now dynamic rather than fixed, and protein-class concentrations evolve over time.',
+        listItems: [
+          'Lactate transport (lldP): k_lacT, Km_lacT_E, Km_lacT_C, Keq_lacT',
+          'lldD + PDH: k1, Km1',
+          'TCA + ETC: k_tca, Km_tca, Km_adp_tca',
+          'ArgD (biosynthesis): k_argD, Km_argD, Km2_nh4, Km2_atp',
+          'ArgO (export): k_argO, Km_argO',
+          'PPK: a_ppk, km_adp, km_polyp',
+          'Protein synthesis: r, Ke',
+          'Decay + maintenance: D_cyto, D_mem, D_etc, m_ATP, V_ratio'
+        ]
+      },
+      {
+        tag: 'Fitted parameters',
+        heading: 'Pre-Fit vs Fitted Parameter Values',
+        text: 'Parameters marked <code>% prefit</code> in <code>SimCell_Para.m</code> and <code>SimCell_X0.m</code> were fitted to match the bioreactor steady-state arginine output. The largest shifts: D_cyto (0.003 → 0.00818 hr⁻¹), D_mem (0.003 → 0.00163 hr⁻¹), V_ratio (1/φ_cell ≈ 11 → 0.157), k_argD (3.84×10⁻⁴ → 6.25×10⁻⁵), k_argO (1.38×10⁻⁴ → 0.0131), r (0.01 → 0.00319 hr⁻¹). Fitted ICs for AcCoA (0.1 → 215 mM) and ATP (9.6 → 29.3 mM) are consistent with the arginine-only PF result.',
+        mediaFile: 'images/simcell_fit_params.png', mediaType: 'image',
+        mediaLabel: '[ Pre-fit vs fitted parameter bar chart → images/simcell_fit_params.png ]'
+      },
+      {
+        tag: 'Model limitations',
+        heading: 'Limitations and What Would Resolve Them',
+        text: 'Three key limitations of the current fit: <strong>(1) ArgD–ArgO confounding:</strong> with only extracellular [Arg]<sub>e</sub> as an observation, the biosynthesis rate and the export rate cannot be separated — the same output can be achieved by many (k_argD, k_argO) pairs. Adding intracellular [Arg]<sub>c</sub> measurements (Sapient Amino Acids Panel) would break this degeneracy. <strong>(2) D_cyto / D_mem unidentifiable from arginine data alone:</strong> protein decay rates are constrained only indirectly through their effect on enzyme levels. A protein turnover assay (pulse-chase) would provide direct constraints. <strong>(3) V_ratio:</strong> the bioreactor-to-cell volume ratio was fitted to 0.157, far below the geometric estimate (~11). This likely compensates for the lack of a spatial gradient model within the hydrogel for cellular uptake — a limitation of the lumped-node approach.'
+      }
+    ]
+  },
+
+  mass_transfer: {
+    title: 'Mass Transfer Model — Before & After Tuning',
+    slides: [
+      {
+        tag: 'Before parameter tuning',
+        heading: 'Simulation with Pre-Fit Initial Conditions',
+        text: 'This video shows the 2-D bioreactor simulation using the pre-fit (literature) initial conditions before parameter tuning. Note the arginine panel (bottom right): arginine accumulates slowly in the liquid and hydrogel, and the pH annotation shows a different trajectory than the tuned model. The cumulative reservoir arginine is lower and the time course is shifted.',
+        mediaFile: 'images/bioreactor_species_animation_fresh_IC.mp4', mediaType: 'video'
+      },
+      {
+        tag: 'After parameter tuning',
+        heading: 'Simulation with Fitted Parameters',
+        text: 'This video shows the simulation using the PF-fitted parameters and initial conditions. The arginine panel now shows a more rapid initial accumulation consistent with the measured data. The pH trajectory in the TA panel is also closer to the experimental measurements. Key differences from the pre-fit run: higher early AcCoA drives faster ArgD flux, and the fitted V_ratio produces a more realistic exchange rate between the SimCell compartment and the liquid.',
+        mediaFile: 'images/bioreactor_species_animation_fitted_parameters.mp4', mediaType: 'video'
+      },
+      {
+        tag: 'Final-frame comparison',
+        heading: 'Steady-State Comparison — How Similar Are the Final Frames?',
+        text: 'Despite different transient trajectories, the two simulations converge to similar steady states by t = 96 hours. The final frames (below) show the concentration fields for all six species. The similarity in the final arginine and alkalinity panels indicates that the model is converging to a thermodynamically consistent steady state — the different parameter sets reach the same attractor. Persistent differences in the lactate and NH₄⁺ panels reveal that the substrate consumption stoichiometry is not fully captured by either parameter set, motivating a more direct measurement of the intracellular fluxes.',
+        mediaFilePair: [
+          { file: 'images/bioreactor_species_animation_fresh_IC_last_frame.png', label: 'Pre-fit initial conditions' },
+          { file: 'images/bioreactor_species_animation_fitted_parameters_last_frame.png', label: 'Fitted parameters' }
+        ]
+      }
+    ]
+  },
+
+  oscillators: {
+    title: 'Agent-Based Oscillator Models',
+    slides: [
+      {
+        tag: 'Repressilator',
+        heading: 'Repressilator — Spatial Ring Formation in a Growing Colony',
+        text: 'The repressilator is a 3-gene transcriptional toggle switch that produces sustained oscillations. In a growing colony of CellModeller bacteria (coloured by x2 hue on the HSV scale), cells at the same radial distance from the founding ancestor share approximately the same phase of the oscillation. As the colony expands, this phase coherence produces characteristic concentric rings — each ring represents one full oscillation cycle completing during cell division. The ring pattern is stable because the repressilator period is commensurate with the cell division time at the simulated growth rate.',
+        mediaFile: 'images/Repressilator.mp4', mediaType: 'video',
+        mediaLabel: '[ Repressilator colony video — images/Repressilator.mp4 ]'
+      },
+      {
+        tag: 'Rössler oscillator (eta=1)',
+        heading: 'Rössler Antithetic Integral Feedback — Periodic Regime',
+        text: 'The Rössler-type antithetic integral feedback circuit (Zand et al. 2022) uses four species (x1, x2, z1, z2) with z1·z2 sequestration providing integral control. In the periodic regime (η = 1), the limit cycle has non-uniform phase velocity — the trajectory slows near the slow manifold and accelerates at the fast fold. This means phase coherence across the colony decays more rapidly than in the repressilator, making spatial ring formation harder to sustain. With Euler integration, the z1 sequestration term is also more sensitive to step size, requiring a small speed factor (0.03) for stable dynamics.',
+        mediaFile: 'images/Rossler_RepressilatorMatch.mp4', mediaType: 'video',
+        mediaLabel: '[ Rössler eta=1 colony video — images/Rossler_RepressilatorMatch.mp4 ]'
+      },
+      {
+        tag: 'Chaotic oscillator (eta=100)',
+        heading: 'Rössler Chaotic Regime — Colony Heterogeneity',
+        text: 'At η = 100 the sequestration term is very strong and the circuit enters a chaotic regime. Individual cells exhibit aperiodic, sensitive-to-initial-conditions dynamics. In the growing colony, cells that start with slightly different initial conditions (from division noise) diverge exponentially in phase. The result is a colony with no spatial organisation — cells at similar radial distances can have very different x2 values. This is in stark contrast to the repressilator rings and illustrates how the type of oscillator determines whether spatial self-organisation is possible.',
+        mediaFile: 'images/Rossler_Chaotic.mp4', mediaType: 'video',
+        mediaLabel: '[ Rössler chaotic colony video — images/Rossler_Chaotic.mp4 ]'
+      },
+      {
+        tag: 'Relevance to SimCells',
+        heading: 'How Agent-Based Oscillators Could Enhance the SimCell Project',
+        text: 'Agent-based oscillator models offer three concrete applications for the SimCell project: <strong>(1) Heterogeneous production rates:</strong> coupling an oscillator to the ArgO export rate in the SimCell ODE would create cells that pulse arginine production rather than secreting at a constant rate — testing whether burst-mode export improves net yield. <strong>(2) Cell-to-cell diversity:</strong> chaotic oscillators generate persistent diversity in enzyme levels across the colony; this could model the observed variability in arginine production across individual SimCells. <strong>(3) Spatial self-organisation:</strong> if the repressilator were linked to a metabolic output (e.g. switching between lactate consumption and arginine export), colonies would self-organise into metabolically distinct spatial zones — a form of synthetic multicellularity that could be exploited for production.',
+        listItems: [
+          'Couple oscillator phase to ArgO export rate — test burst vs. continuous secretion',
+          'Use chaotic IVP diversity to model cell-to-cell kinetic variability',
+          'Link repressilator phase to lactate vs. arginine flux switching',
+          'Spatial ring pattern → spatial metabolic zonation in the hydrogel'
+        ]
+      }
+    ]
+  }
+
+}; // end SECTIONS
+
+// ── State ──────────────────────────────────────────────────────
+let curSection = null;
+let curSlide   = 0;
+
+// ── Panel functions ────────────────────────────────────────────
+function openPanel(key, startSlide) {
+  const sec = SECTIONS[key];
+  if (!sec) return;
+  curSection = key;
+  curSlide   = (startSlide !== undefined) ? Math.min(startSlide, sec.slides.length - 1) : 0;
+  document.getElementById('ph-title').textContent = sec.title;
+  renderSlide();
+  document.getElementById('panel').classList.add('open');
+  document.getElementById('main-view').classList.add('shifted');
+}
+
+function closePanel() {
+  document.getElementById('panel').classList.remove('open');
+  document.getElementById('main-view').classList.remove('shifted');
+}
+
+function renderSlide() {
+  const sec   = SECTIONS[curSection];
+  const slide = sec.slides[curSlide];
+  const total = sec.slides.length;
+
+  function mediaBlock(file, type, label) {
+    if (file) {
+      const inner = type === 'video'
+        ? `<video src="${file}" controls style="width:100%;border-radius:10px"></video>`
+        : `<img src="${file}" alt="">`;
+      return `<div class="slide-media">${inner}</div>`;
+    }
+    return label ? `<div class="slide-media"><span>${label}</span></div>` : '';
+  }
+
+  let pairHTML = '';
+  if (slide.mediaFilePair) {
+    pairHTML = `<div class="slide-media-pair">` +
+      slide.mediaFilePair.map(p =>
+        `<div><div class="slide-media"><img src="${p.file}" alt="${p.label}"></div>
+         <div class="slide-media-label">${p.label}</div></div>`
+      ).join('') +
+      `</div>`;
+  }
+
+  document.getElementById('slide-area').innerHTML =
+    `<span class="slide-tag">${slide.tag}</span>
+     <h2>${slide.heading}</h2>
+     <p>${slide.text}</p>
+     ${slide.equation ? `<div class="eq-block"><div class="eq-main">${slide.equation}</div>${slide.eqKey ? `<div class="eq-key">${slide.eqKey}</div>` : ''}</div>` : ''}
+     ${slide.listItems ? `<ul class="slide-list">${slide.listItems.map(i=>`<li>${i}</li>`).join('')}</ul>` : ''}
+     ${slide.mediaFilePair ? pairHTML : mediaBlock(slide.mediaFile, slide.mediaType, slide.mediaLabel)}`;
+
+  document.getElementById('slide-ctr').textContent = `${curSlide + 1} / ${total}`;
+  document.getElementById('prev-btn').disabled = curSlide === 0;
+  document.getElementById('next-btn').disabled = curSlide === total - 1;
+}
+
+function changeSlide(dir) {
+  const total = SECTIONS[curSection].slides.length;
+  curSlide = Math.max(0, Math.min(total - 1, curSlide + dir));
+  renderSlide();
+}
+
+// ── Hydrogel view ──────────────────────────────────────────────
+function openHydrogelView() {
+  const hv = document.getElementById('hv');
+  hv.style.display = 'flex';
+  requestAnimationFrame(() => hv.classList.add('open'));
+  closePanel();
+}
+
+function closeHydrogelView() {
+  const hv = document.getElementById('hv');
+  hv.classList.remove('open');
+  hv.addEventListener('transitionend', () => { hv.style.display = 'none'; }, { once: true });
+}
+
+// ── Keyboard shortcuts ─────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if (document.getElementById('hv').classList.contains('open')) closeHydrogelView();
+    else closePanel();
+  }
+  if (!curSection) return;
+  if (e.key === 'ArrowRight') changeSlide(1);
+  if (e.key === 'ArrowLeft')  changeSlide(-1);
+});
+
+// No auto-open — user clicks a dot to explore
+
+function toggleNotebook() {
+  document.getElementById('notebook').classList.toggle('open');
+}
+</script>
+</body>
+</html>
